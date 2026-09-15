@@ -4,30 +4,51 @@
 # valid Hetzner API token.
 
 provider_ip() {
-  hcloud server describe "$RAI_SERVER" -o json | jq -r '.public_net.ipv4.ip'
+  local result
+  if ! result=$(hcloud server describe "$RAI_SERVER" -o json | jq -r '.public_net.ipv4.ip'); then
+    echo "Error: hcloud failed to get IP for server '$RAI_SERVER'." >&2
+    return 1
+  fi
+  echo "$result"
 }
 
 provider_status() {
-  hcloud server describe "$RAI_SERVER" -o json | jq -r '.status'
+  local result
+  if ! result=$(hcloud server describe "$RAI_SERVER" -o json | jq -r '.status'); then
+    echo "Error: hcloud failed to get status for server '$RAI_SERVER'." >&2
+    return 1
+  fi
+  echo "$result"
 }
 
 provider_start() {
-  if [ "$(provider_status)" = "running" ]; then
+  local status
+  status=$(provider_status) || return 1
+  if [ "$status" = "running" ]; then
     echo "Already running."
-  else
-    echo "Starting $RAI_SERVER..."
-    hcloud server poweron "$RAI_SERVER"
-
-    echo -n "Waiting for server..."
-    while [ "$(provider_status)" != "running" ]; do
-      sleep 2
-      echo -n "."
-    done
-    echo " done."
+    return 0
   fi
+
+  echo "Starting $RAI_SERVER..."
+  if ! hcloud server poweron "$RAI_SERVER"; then
+    echo "Error: hcloud failed to power on server '$RAI_SERVER'." >&2
+    return 1
+  fi
+
+  echo -n "Waiting for server..."
+  while true; do
+    status=$(provider_status) || return 1
+    [ "$status" = "running" ] && break
+    sleep 2
+    echo -n "."
+  done
+  echo " done."
 }
 
 provider_stop() {
   echo "Stopping $RAI_SERVER..."
-  hcloud server shutdown "$RAI_SERVER"
+  if ! hcloud server shutdown "$RAI_SERVER"; then
+    echo "Error: hcloud failed to shut down server '$RAI_SERVER'." >&2
+    return 1
+  fi
 }
