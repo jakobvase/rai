@@ -1,0 +1,17 @@
+#!/bin/bash
+# rai - Remote AI workspace manager
+
+COMMAND="$1"
+shift
+
+SCRIPT_DIR="$(dirname "$(realpath "$0")")"
+
+case "$COMMAND" in
+  start|stop|push|pull|cp|ssh)
+    "$SCRIPT_DIR/rai-$COMMAND" "$@"
+    ;;
+  *)
+    echo "Usage: rai <start|stop|push|pull|cp|ssh>"
+    exit 1
+    ;;
+esac

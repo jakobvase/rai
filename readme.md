@@ -6,9 +6,9 @@ To install, add `export PATH="$HOME/rai:$PATH"` to your `~/.bashrc`.
 
 ## Requirements
 
-Assumes hetzner cloud, `hcloud` must be installed, and `HCLOUD_TOKEN` must be a valid hetzner api token.
+- `jq`, `git`, `ssh`, and `scp`.
 
-Several commands need `jq`, `git`, `ssh`, and `scp`.
+Currently assumes hetzner cloud. `hcloud` must be installed and `HCLOUD_TOKEN` must be a valid hetzner api token.
 
 For `rai code` to work, you must install VS Code's `code` cli. Open the Command Palette (Cmd+Shift+P), search for "Shell Command: Install 'code' command in PATH", and run it.
 
