@@ -1,5 +1,6 @@
 #!/bin/bash
 # rai push - Push current git repo to RAI VM
+set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 source "$SCRIPT_DIR/rai-config"
@@ -7,7 +8,7 @@ source "$SCRIPT_DIR/rai-provider-$RAI_PROVIDER"
 source "$SCRIPT_DIR/rai-common"
 
 force=false
-if [ "$1" = "--force" ]; then
+if [ "${1:-}" = "--force" ]; then
   force=true
   shift
 fi
@@ -25,7 +26,7 @@ ssh "$RAI_USER@$ip" "
   fi
 "
 
-branch=$(git symbolic-ref --short -q HEAD)
+branch=$(git symbolic-ref --short -q HEAD) || true
 if [ -z "$branch" ]; then
   echo "Not on a branch (detached HEAD). Checkout a branch before pushing." >&2
   exit 1
@@ -35,7 +36,7 @@ lease_ref="refs/rai-remote/$branch"
 if [ "$force" = true ]; then
   git push --force "$remote_url" "$branch" || exit 1
 else
-  expected_sha=$(git rev-parse --verify -q "$lease_ref" 2>/dev/null)
+  expected_sha=$(git rev-parse --verify -q "$lease_ref" 2>/dev/null) || true
   git push --force-with-lease="$branch:$expected_sha" "$remote_url" "$branch" || exit 1
 fi
 git update-ref "$lease_ref" "$branch"
