@@ -11,8 +11,7 @@
 
 Remaining work, in priority order:
 
-1. Fix `rai-config`'s `declare -A` portability bug (regression — silently
-   breaks env-var precedence on any bash without associative arrays).
+1. ~~Fix `rai-config`'s `declare -A` portability bug~~ — done, see below.
 2. Provider abstraction (todo: cloud-provider independence).
 3. `rai-ssh` missing remote dir (todo item 1).
 4. `rai-cp` full-path support via `--raw` (todo item 2).
@@ -46,7 +45,7 @@ beyond the two bugfixes below.
 
 ---
 
-## 1. `rai-config`: `declare -A` fails on bash without associative arrays
+## 1. `rai-config`: `declare -A` fails on bash without associative arrays — DONE
 
 Reported error:
 ```

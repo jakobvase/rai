@@ -16,22 +16,31 @@ RAI_REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"
 
 # Config files assign unconditionally, so remember which of these vars the
 # caller already exported and restore them afterwards - env vars must win
-# over both config files.
+# over both config files. Deliberately avoids `declare -A` (bash 4+) so this
+# works on older bash too (e.g. macOS's stock /bin/bash, which is 3.2);
+# instead each var gets its own scalar capture (`_rai_preset_$name`) plus a
+# separate "was it set at all" flag (`_rai_preset_set_$name`), since a
+# preset-but-empty value must still be restored as empty rather than treated
+# as unset.
 _rai_config_vars="RAI_SERVER RAI_USER RAI_REMOTE_BASE RAI_VOLUME"
-declare -A _rai_preset=()
 for _rai_var in $_rai_config_vars; do
   if [ -n "${!_rai_var+x}" ]; then
-    _rai_preset[$_rai_var]="${!_rai_var}"
+    eval "_rai_preset_set_${_rai_var}=1"
+    eval "_rai_preset_${_rai_var}=\${${_rai_var}}"
   fi
 done
 
 [ -f "$HOME/.rai/config" ] && source "$HOME/.rai/config"
 [ -n "$RAI_REPO_ROOT" ] && [ -f "$RAI_REPO_ROOT/.rai/config" ] && source "$RAI_REPO_ROOT/.rai/config"
 
-for _rai_var in "${!_rai_preset[@]}"; do
-  printf -v "$_rai_var" '%s' "${_rai_preset[$_rai_var]}"
+for _rai_var in $_rai_config_vars; do
+  eval "_rai_was_preset=\${_rai_preset_set_${_rai_var}:-}"
+  if [ -n "$_rai_was_preset" ]; then
+    eval "printf -v $_rai_var '%s' \"\$_rai_preset_${_rai_var}\""
+  fi
+  eval "unset _rai_preset_${_rai_var} _rai_preset_set_${_rai_var}"
 done
-unset _rai_preset _rai_var _rai_config_vars
+unset _rai_var _rai_config_vars _rai_was_preset
 
 RAI_USER="${RAI_USER:-user}"
 RAI_SERVER="${RAI_SERVER:-rai}"
