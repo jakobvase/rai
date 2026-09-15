@@ -1,5 +1,6 @@
 #!/bin/bash
 # rai unlock - Unlock the encrypted workspace volume
+set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 source "$SCRIPT_DIR/rai-config"

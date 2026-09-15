@@ -1,13 +1,14 @@
 #!/bin/bash
 # rai - Remote AI workspace manager
-
-COMMAND="$1"
-shift
+set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 
+COMMAND="${1:-}"
+
 case "$COMMAND" in
   start|stop|push|pull|cp|ssh|code|unlock)
+    shift
     "$SCRIPT_DIR/rai-$COMMAND" "$@"
     ;;
   *)
