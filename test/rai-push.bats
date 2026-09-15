@@ -154,3 +154,53 @@ init_repo() {
   [[ "$invocation" == *"$(basename "$repo")"* ]]
   [[ "$invocation" == *"feature-branch"* ]]
 }
+
+# stub_ssh_checkout_result RESULT - like stub_ssh_eval (still `eval`s the
+# remote-setup command for real, against RAI_REMOTE_BASE standing in for the
+# remote), but intercepts specifically the final `git ... checkout ...`
+# command and makes it exit with RESULT instead of actually running it. That
+# isolates the thing the two tests below care about - rai-push's own
+# lease-ordering control flow - from the harness limitation (noted above)
+# that a real checkout against our fake "remote" can't succeed since the
+# stubbed `git push` never actually lands the branch there.
+stub_ssh_checkout_result() {
+  local result="$1"
+  make_stub ssh "
+    { printf '%s\n' \"\$@\"; echo ---; } >> \"$STUB_DIR/ssh_invocation\"
+    cmd=\"\${@: -1}\"
+    case \"\$cmd\" in
+      *checkout*)
+        exit $result
+        ;;
+      *)
+        eval \"\$cmd\"
+        ;;
+    esac
+  "
+}
+
+@test "rai-push: lease ref is NOT updated when the remote checkout fails" {
+  repo="$BATS_TEST_TMPDIR/repo"
+  init_repo "$repo" "feature-branch"
+  stub_ssh_checkout_result 1
+
+  run env -C "$repo" "$REPO_ROOT/rai-push"
+
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"Remote checkout"* ]]
+  run "$REAL_GIT" -C "$repo" rev-parse --verify -q refs/rai-remote/feature-branch
+  [ "$status" -ne 0 ]
+}
+
+@test "rai-push: lease ref IS updated once the remote checkout succeeds" {
+  repo="$BATS_TEST_TMPDIR/repo"
+  init_repo "$repo" "feature-branch"
+  stub_ssh_checkout_result 0
+
+  run env -C "$repo" "$REPO_ROOT/rai-push"
+
+  [ "$status" -eq 0 ]
+  branch_sha="$("$REAL_GIT" -C "$repo" rev-parse feature-branch)"
+  lease_sha="$("$REAL_GIT" -C "$repo" rev-parse refs/rai-remote/feature-branch)"
+  [ "$branch_sha" = "$lease_sha" ]
+}

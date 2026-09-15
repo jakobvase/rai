@@ -40,7 +40,14 @@ else
   expected_sha=$(git rev-parse --verify -q "$lease_ref" 2>/dev/null) || true
   git push --force-with-lease="$branch:$expected_sha" "$remote_url" "$branch" || exit 1
 fi
-git update-ref "$lease_ref" "$branch"
 
 q_branch=$(shell_quote "$branch")
-ssh "$RAI_USER@$ip" "git -C $q_remote_path checkout $q_branch"
+if ! ssh "$RAI_USER@$ip" "git -C $q_remote_path checkout $q_branch"; then
+  echo "Remote checkout of '$branch' failed after push; remote may be out of sync. Not recording lease." >&2
+  exit 1
+fi
+
+# Only now that the remote's HEAD/working tree are confirmed to actually be
+# on $branch do we record the lease - it must attest that the remote is
+# truly in sync, not merely that our push was accepted.
+git update-ref "$lease_ref" "$branch"
