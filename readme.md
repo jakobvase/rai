@@ -15,7 +15,7 @@ VM management goes through a provider, set via `RAI_PROVIDER` (default: `hetzner
 
 For `rai code` to work, you must install VS Code's `code` cli. Open the Command Palette (Cmd+Shift+P), search for "Shell Command: Install 'code' command in PATH", and run it.
 
-# Configuration
+## Configuration
 
 All `rai-*` scripts source `rai-config`, which loads these variables, all optional:
 
@@ -40,11 +40,11 @@ they can run arbitrary shell - only use `.rai/config` files you trust.
 If `RAI_VOLUME` points at a LUKS-encrypted volume, `rai unlock` opens and
 mounts it over SSH via `sudo cryptsetup` and `sudo mount`. For that to work
 non-interactively, the VM needs a sudoers rule granting `RAI_USER`
-passwordless access to exactly those two commands - add it via
-`visudo -f /etc/sudoers.d/rai-unlock`:
+passwordless access to exactly those two commands - add these two commands to
+`/etc/sudoers.d/rai-unlock` on the VM:
 
 ```
-rai ALL=(root) NOPASSWD: /sbin/cryptsetup luksOpen /dev/sdb data
+rai ALL=(root) NOPASSWD: /usr/sbin/cryptsetup luksOpen /dev/sdb data
 rai ALL=(root) NOPASSWD: /usr/bin/mount /dev/mapper/data /home/rai/workspaces
 ```
 
@@ -55,5 +55,3 @@ rai ALL=(root) NOPASSWD: /usr/bin/mount /dev/mapper/data /home/rai/workspaces
 - Use absolute paths from `which cryptsetup` / `which mount` on the VM.
 - The rule is scoped to that one user and those two exact commands - `rai`
   gets no other passwordless sudo access.
-- The file must be owned by root with mode `0440`; `visudo -f` validates
-  syntax before saving.
