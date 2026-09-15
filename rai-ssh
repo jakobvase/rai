@@ -10,4 +10,10 @@ ip=$(provider_ip)
 repo_name=$(basename "$RAI_REPO_ROOT")
 remote_path="$RAI_REMOTE_BASE/$repo_name"
 
-ssh -t "$RAI_USER@$ip" "mkdir -p '$remote_path' && cd '$remote_path' && exec \$SHELL"
+ssh -t "$RAI_USER@$ip" "
+  if ! mountpoint -q '$RAI_REMOTE_BASE'; then
+    echo 'Workspace volume is not mounted. Run \`rai unlock\` first.' >&2
+    exit 1
+  fi
+  mkdir -p '$remote_path' && cd '$remote_path' && exec \$SHELL
+"
