@@ -3,8 +3,8 @@
 #
 # Precedence, highest to lowest:
 #   1. Already-exported environment variables
-#   2. ~/.rai/config          (per-machine override, not committed)
-#   3. <repo-root>/.rai/config (repo defaults, committed, shared with the team)
+#   2. <repo-root>/.rai/config (repo defaults, committed, shared with the team)
+#   3. ~/.rai/config          (per-machine override, not committed)
 #   4. Hardcoded fallback defaults below
 #
 # Both config files are plain `KEY=value` shell files and are sourced
@@ -25,8 +25,8 @@ for _rai_var in $_rai_config_vars; do
   fi
 done
 
-[ -n "$RAI_REPO_ROOT" ] && [ -f "$RAI_REPO_ROOT/.rai/config" ] && source "$RAI_REPO_ROOT/.rai/config"
 [ -f "$HOME/.rai/config" ] && source "$HOME/.rai/config"
+[ -n "$RAI_REPO_ROOT" ] && [ -f "$RAI_REPO_ROOT/.rai/config" ] && source "$RAI_REPO_ROOT/.rai/config"
 
 for _rai_var in "${!_rai_preset[@]}"; do
   printf -v "$_rai_var" '%s' "${_rai_preset[$_rai_var]}"
