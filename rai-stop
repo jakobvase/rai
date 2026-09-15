@@ -3,6 +3,6 @@
 
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 source "$SCRIPT_DIR/rai-config"
+source "$SCRIPT_DIR/rai-provider-$RAI_PROVIDER"
 
-echo "Stopping $RAI_SERVER..."
-hcloud server shutdown "$RAI_SERVER"
+provider_stop

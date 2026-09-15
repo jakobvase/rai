@@ -3,6 +3,7 @@
 
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 source "$SCRIPT_DIR/rai-config"
+source "$SCRIPT_DIR/rai-provider-$RAI_PROVIDER"
 
 src="$1"
 dest="$2"
@@ -12,7 +13,7 @@ if [ -z "$src" ] || [ -z "$dest" ]; then
   exit 1
 fi
 
-ip=$(hcloud server describe "$RAI_SERVER" -o json | jq -r '.public_net.ipv4.ip')
+ip=$(provider_ip)
 
 repo_name=$(basename "$RAI_REPO_ROOT")
 remote_path="$RAI_REMOTE_BASE/$repo_name/$dest"

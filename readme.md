@@ -8,7 +8,10 @@ To install, add `export PATH="$HOME/rai:$PATH"` to your `~/.bashrc`.
 
 - `jq`, `git`, `ssh`, and `scp`.
 
-Currently assumes hetzner cloud. `hcloud` must be installed and `HCLOUD_TOKEN` must be a valid hetzner api token.
+VM management goes through a provider, set via `RAI_PROVIDER` (default: `hcloud`). Built-in providers:
+
+- `hcloud` - Hetzner Cloud. `hcloud` must be installed and `HCLOUD_TOKEN` must be a valid hetzner api token.
+- `local` - a static/always-on machine (e.g. your own physical box), addressed via `RAI_STATIC_IP`. There's nothing to start/stop.
 
 For `rai code` to work, you must install VS Code's `code` cli. Open the Command Palette (Cmd+Shift+P), search for "Shell Command: Install 'code' command in PATH", and run it.
 
@@ -20,6 +23,8 @@ All `rai-*` scripts source `rai-config`, which loads these variables, all option
 - RAI_USER - SSH user (default: user)
 - RAI_REMOTE_BASE - workspace root on VM (default: /home/$RAI_USER/workspaces)
 - RAI_VOLUME - volume to mount the workspaces to and from, useful if they should be encrypted (default: /dev/sdb)
+- RAI_PROVIDER - which provider to use to find/start/stop the VM: `hcloud` or `local` (default: hcloud)
+- RAI_STATIC_IP - IP or hostname of the machine, only used when RAI_PROVIDER=local
 
 They can be set, in increasing order of precedence:
 

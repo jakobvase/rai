@@ -1,0 +1,33 @@
+# rai-provider-hcloud - Hetzner Cloud provider for rai-* scripts.
+# Sourced (not executed) by each rai-* script, after rai-config, based on
+# RAI_PROVIDER. Requires `hcloud` to be installed and HCLOUD_TOKEN to be a
+# valid Hetzner API token.
+
+provider_ip() {
+  hcloud server describe "$RAI_SERVER" -o json | jq -r '.public_net.ipv4.ip'
+}
+
+provider_status() {
+  hcloud server describe "$RAI_SERVER" -o json | jq -r '.status'
+}
+
+provider_start() {
+  if [ "$(provider_status)" = "running" ]; then
+    echo "Already running."
+  else
+    echo "Starting $RAI_SERVER..."
+    hcloud server poweron "$RAI_SERVER"
+
+    echo -n "Waiting for server..."
+    while [ "$(provider_status)" != "running" ]; do
+      sleep 2
+      echo -n "."
+    done
+    echo " done."
+  fi
+}
+
+provider_stop() {
+  echo "Stopping $RAI_SERVER..."
+  hcloud server shutdown "$RAI_SERVER"
+}

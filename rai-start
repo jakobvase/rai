@@ -1,25 +1,12 @@
 #!/bin/bash
-# rai start - Start Hetzner VM if not running
+# rai start - Start the RAI VM if not running
 
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 source "$SCRIPT_DIR/rai-config"
+source "$SCRIPT_DIR/rai-provider-$RAI_PROVIDER"
 
-status=$(hcloud server describe "$RAI_SERVER" -o json | jq -r '.status')
+provider_start
 
-if [ "$status" = "running" ]; then
-  echo "Already running."
-else
-  echo "Starting $RAI_SERVER..."
-  hcloud server poweron "$RAI_SERVER"
-
-  echo -n "Waiting for server..."
-  while [ "$(hcloud server describe "$RAI_SERVER" -o json | jq -r '.status')" != "running" ]; do
-    sleep 2
-    echo -n "."
-  done
-  echo " done."
-fi
-
-ip=$(hcloud server describe "$RAI_SERVER" -o json | jq -r '.public_net.ipv4.ip')
+ip=$(provider_ip)
 echo "IP: $ip"
 echo "SSH: ssh user@$ip"

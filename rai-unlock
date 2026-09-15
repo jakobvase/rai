@@ -3,8 +3,9 @@
 
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 source "$SCRIPT_DIR/rai-config"
+source "$SCRIPT_DIR/rai-provider-$RAI_PROVIDER"
 
-ip=$(hcloud server describe "$RAI_SERVER" -o json | jq -r '.public_net.ipv4.ip')
+ip=$(provider_ip)
 
 if [ -z "$ip" ] || [ "$ip" = "null" ]; then
   echo "Could not get VM IP. Is the server running?"
