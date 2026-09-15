@@ -20,4 +20,5 @@ ssh -t "$RAI_USER@$ip" "
     sudo cryptsetup luksOpen $q_volume data || exit 1
   fi
   sudo mount /dev/mapper/data $q_remote_base
+  echo Unlocked and mounted $q_remote_base.
 "

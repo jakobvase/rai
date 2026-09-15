@@ -4,8 +4,8 @@
 # `ssh` is stubbed via a capture-then-eval trick rather than a dumb recorder.
 #
 # Note: this only exercises the RAI_REMOTE_BASE injection surface (used in
-# both the `mountpoint` check and the final `mount` call, so it's always
-# reached). RAI_VOLUME's quoting is exercised generically by
+# the `mountpoint` check, the `mount` call, and the success echo, so it's
+# always reached). RAI_VOLUME's quoting is exercised generically by
 # rai-common.bats' shell_quote tests instead of end-to-end here, because the
 # `sudo cryptsetup luksOpen` line is only reached when /dev/mapper/data
 # doesn't already exist - real state on the host running the tests, not
@@ -42,6 +42,15 @@ teardown() {
 
   invocation="$(cat "$STUB_DIR/mount_invocation")"
   [[ "$invocation" == *"/mnt/workspaces"* ]]
+}
+
+@test "rai-unlock: successful unlock (not already mounted) prints a clear confirmation naming the mount point" {
+  export RAI_REMOTE_BASE="/mnt/workspaces"
+
+  run "$REPO_ROOT/rai-unlock"
+  [ "$status" -eq 0 ]
+
+  [[ "$output" == *"Unlocked and mounted /mnt/workspaces."* ]]
 }
 
 @test "rai-unlock: injection-attempt RAI_REMOTE_BASE is not executed by the remote shell" {
