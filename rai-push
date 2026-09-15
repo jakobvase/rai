@@ -18,13 +18,17 @@ remote_path=$(remote_repo_path) || exit 1
 remote_url="ssh://$RAI_USER@$ip$remote_path"
 q_remote_path=$(shell_quote "$remote_path")
 
-# Set up repo on VM if needed
+# Set up repo on VM if needed (mkdir/init are genuinely one-time - gated
+# behind .git existing). Remote config that must hold goes below the `if`,
+# unconditional, so it's re-asserted every push and retroactively applies
+# to repos that were already `git init`'d before the setting existed - not
+# just newly created ones.
 ssh "$RAI_USER@$ip" "
   if [ ! -d $q_remote_path/.git ]; then
     mkdir -p $q_remote_path
     git init $q_remote_path
-    git -C $q_remote_path config receive.denyCurrentBranch updateInstead
   fi
+  git -C $q_remote_path config receive.denyCurrentBranch updateInstead
 "
 
 branch=$(git symbolic-ref --short -q HEAD) || true

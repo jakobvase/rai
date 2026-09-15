@@ -143,6 +143,26 @@ init_repo() {
   [[ "$push_invocation" == *"--force-with-lease=feature-branch:"* ]]
 }
 
+@test "rai-push: remote-config is ensured even on an already-initialized remote repo" {
+  repo="$BATS_TEST_TMPDIR/repo"
+  init_repo "$repo" "feature-branch"
+
+  # Simulate a remote repo that was `git init`'d before the
+  # denyCurrentBranch config existed (or by some other pre-fix rai-push):
+  # .git is already there, so the creation `if` is false, but the config
+  # is missing.
+  remote_repo="$RAI_REMOTE_BASE/$(basename "$repo")"
+  mkdir -p "$remote_repo"
+  "$REAL_GIT" init -q "$remote_repo"
+  run "$REAL_GIT" -C "$remote_repo" config --get receive.denyCurrentBranch
+  [ "$status" -ne 0 ]
+
+  # Same harness caveat as above re: the final checkout call failing.
+  env -C "$repo" "$REPO_ROOT/rai-push" || true
+
+  [ "$("$REAL_GIT" -C "$remote_repo" config --get receive.denyCurrentBranch)" = updateInstead ]
+}
+
 @test "rai-push: normal repo dir name and branch produce working ssh commands" {
   repo="$BATS_TEST_TMPDIR/repo"
   init_repo "$repo" "feature-branch"
