@@ -14,7 +14,7 @@ fi
 ip=$(provider_ip)
 
 if [ -z "$ip" ] || [ "$ip" = "null" ]; then
-  echo "Could not get VM IP. Is the server running?"
+  echo "Could not get VM IP. Is the server running?" >&2
   exit 1
 fi
 
@@ -33,7 +33,7 @@ ssh "$RAI_USER@$ip" "
 
 branch=$(git symbolic-ref --short -q HEAD)
 if [ -z "$branch" ]; then
-  echo "Not on a branch (detached HEAD). Checkout a branch before pushing."
+  echo "Not on a branch (detached HEAD). Checkout a branch before pushing." >&2
   exit 1
 fi
 lease_ref="refs/rai-remote/$branch"
