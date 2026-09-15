@@ -5,6 +5,12 @@ SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 source "$SCRIPT_DIR/rai-config"
 source "$SCRIPT_DIR/rai-provider-$RAI_PROVIDER"
 
+force=false
+if [ "$1" = "--force" ]; then
+  force=true
+  shift
+fi
+
 ip=$(provider_ip)
 
 if [ -z "$ip" ] || [ "$ip" = "null" ]; then
@@ -27,8 +33,13 @@ ssh "$RAI_USER@$ip" "
 
 branch=$(git rev-parse --abbrev-ref HEAD)
 lease_ref="refs/rai-remote/$branch"
-expected_sha=$(git rev-parse --verify -q "$lease_ref" 2>/dev/null)
-git push --force-with-lease="$branch:$expected_sha" "$remote_url" "$branch" || exit 1
+
+if [ "$force" = true ]; then
+  git push --force "$remote_url" "$branch" || exit 1
+else
+  expected_sha=$(git rev-parse --verify -q "$lease_ref" 2>/dev/null)
+  git push --force-with-lease="$branch:$expected_sha" "$remote_url" "$branch" || exit 1
+fi
 git update-ref "$lease_ref" "$branch"
 
 ssh "$RAI_USER@$ip" "git -C '$remote_path' checkout '$branch'"
