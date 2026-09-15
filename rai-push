@@ -26,6 +26,9 @@ ssh "$RAI_USER@$ip" "
 "
 
 branch=$(git rev-parse --abbrev-ref HEAD)
-git push "$remote_url" "$branch"
+lease_ref="refs/rai-remote/$branch"
+expected_sha=$(git rev-parse --verify -q "$lease_ref" 2>/dev/null)
+git push --force-with-lease="$branch:$expected_sha" "$remote_url" "$branch"
+git update-ref "$lease_ref" "$branch"
 
 ssh "$RAI_USER@$ip" "git -C '$remote_path' checkout '$branch'"

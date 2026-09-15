@@ -16,4 +16,6 @@ repo_name=$(basename "$RAI_REPO_ROOT")
 remote_url="ssh://$RAI_USER@$ip$RAI_REMOTE_BASE/$repo_name"
 
 branch=$(git rev-parse --abbrev-ref HEAD)
-git fetch "$remote_url" "$branch" && git merge FETCH_HEAD
+git fetch "$remote_url" "$branch" \
+  && git update-ref "refs/rai-remote/$branch" FETCH_HEAD \
+  && git merge FETCH_HEAD
