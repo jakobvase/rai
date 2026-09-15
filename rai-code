@@ -4,8 +4,9 @@
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 source "$SCRIPT_DIR/rai-config"
 source "$SCRIPT_DIR/rai-provider-$RAI_PROVIDER"
+source "$SCRIPT_DIR/rai-common"
 
-ip=$(provider_ip)
-repo_name=$(basename "$RAI_REPO_ROOT")
+ip=$(require_ip) || exit 1
+remote_path=$(remote_repo_path) || exit 1
 
-code --remote ssh-remote+"$RAI_USER@$ip" "$RAI_REMOTE_BASE/$repo_name"
+code --remote ssh-remote+"$RAI_USER@$ip" "$remote_path"

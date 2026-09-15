@@ -1,0 +1,31 @@
+# rai-common - Shared helpers for rai-* scripts.
+# Sourced (not executed) by each rai-* script, after rai-config and the
+# rai-provider-$RAI_PROVIDER file (these helpers call provider_ip and read
+# RAI_* config vars, so both must already be sourced).
+
+# require_ip - Get and validate the VM's IP address.
+# Prints the IP to stdout on success. On failure, prints a clear error to
+# stderr and returns 1 (does not exit, so callers control the exit).
+# Usage: ip=$(require_ip) || exit 1
+require_ip() {
+  local ip
+  ip=$(provider_ip)
+  if [ -z "$ip" ] || [ "$ip" = "null" ]; then
+    echo "Could not get VM IP. Is the server running?" >&2
+    return 1
+  fi
+  echo "$ip"
+}
+
+# remote_repo_path - Compute the remote workspace path for the current repo.
+# Prints the path to stdout on success. On failure (not inside a git repo,
+# so RAI_REPO_ROOT is empty), prints a clear error to stderr and returns 1
+# instead of producing a path like "$RAI_REMOTE_BASE/".
+# Usage: remote_path=$(remote_repo_path) || exit 1
+remote_repo_path() {
+  if [ -z "$RAI_REPO_ROOT" ]; then
+    echo "Error: not inside a git repository." >&2
+    return 1
+  fi
+  echo "$RAI_REMOTE_BASE/$(basename "$RAI_REPO_ROOT")"
+}

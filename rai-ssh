@@ -4,11 +4,10 @@
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 source "$SCRIPT_DIR/rai-config"
 source "$SCRIPT_DIR/rai-provider-$RAI_PROVIDER"
+source "$SCRIPT_DIR/rai-common"
 
-ip=$(provider_ip)
-
-repo_name=$(basename "$RAI_REPO_ROOT")
-remote_path="$RAI_REMOTE_BASE/$repo_name"
+ip=$(require_ip) || exit 1
+remote_path=$(remote_repo_path) || exit 1
 
 ssh -t "$RAI_USER@$ip" "
   if ! mountpoint -q '$RAI_REMOTE_BASE'; then

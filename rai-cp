@@ -4,6 +4,7 @@
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 source "$SCRIPT_DIR/rai-config"
 source "$SCRIPT_DIR/rai-provider-$RAI_PROVIDER"
+source "$SCRIPT_DIR/rai-common"
 
 raw=false
 if [ "$1" = "--raw" ]; then
@@ -19,7 +20,7 @@ if [ -z "$src" ] || [ -z "$dest" ]; then
   exit 1
 fi
 
-ip=$(provider_ip)
+ip=$(require_ip) || exit 1
 
 if [ "$raw" = true ]; then
   remote_path="$dest"
@@ -28,8 +29,7 @@ else
     echo "Error: not inside a git repository. Use 'rai cp --raw' for a full remote path." >&2
     exit 1
   fi
-  repo_name=$(basename "$RAI_REPO_ROOT")
-  remote_path="$RAI_REMOTE_BASE/$repo_name/$dest"
+  remote_path="$(remote_repo_path)/$dest"
 fi
 
 scp "$src" "$RAI_USER@$ip:$remote_path"

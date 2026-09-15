@@ -4,13 +4,9 @@
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 source "$SCRIPT_DIR/rai-config"
 source "$SCRIPT_DIR/rai-provider-$RAI_PROVIDER"
+source "$SCRIPT_DIR/rai-common"
 
-ip=$(provider_ip)
-
-if [ -z "$ip" ] || [ "$ip" = "null" ]; then
-  echo "Could not get VM IP. Is the server running?"
-  exit 1
-fi
+ip=$(require_ip) || exit 1
 
 ssh -t "$RAI_USER@$ip" "
   if mountpoint -q '$RAI_REMOTE_BASE'; then
