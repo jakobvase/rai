@@ -1,0 +1,39 @@
+# rai-config - Shared configuration loader for rai-* scripts.
+# Sourced (not executed) by each rai-* script; do not run this directly.
+#
+# Precedence, highest to lowest:
+#   1. Already-exported environment variables
+#   2. ~/.rai/config          (per-machine override, not committed)
+#   3. <repo-root>/.rai/config (repo defaults, committed, shared with the team)
+#   4. Hardcoded fallback defaults below
+#
+# Both config files are plain `KEY=value` shell files and are sourced
+# directly, i.e. they can run arbitrary shell. That's acceptable since
+# they're local files the user controls, but treat them accordingly -
+# don't source config files you didn't write or review.
+
+RAI_REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"
+
+# Config files assign unconditionally, so remember which of these vars the
+# caller already exported and restore them afterwards - env vars must win
+# over both config files.
+_rai_config_vars="RAI_SERVER RAI_USER RAI_REMOTE_BASE RAI_VOLUME"
+declare -A _rai_preset=()
+for _rai_var in $_rai_config_vars; do
+  if [ -n "${!_rai_var+x}" ]; then
+    _rai_preset[$_rai_var]="${!_rai_var}"
+  fi
+done
+
+[ -n "$RAI_REPO_ROOT" ] && [ -f "$RAI_REPO_ROOT/.rai/config" ] && source "$RAI_REPO_ROOT/.rai/config"
+[ -f "$HOME/.rai/config" ] && source "$HOME/.rai/config"
+
+for _rai_var in "${!_rai_preset[@]}"; do
+  printf -v "$_rai_var" '%s' "${_rai_preset[$_rai_var]}"
+done
+unset _rai_preset _rai_var _rai_config_vars
+
+RAI_USER="${RAI_USER:-user}"
+RAI_SERVER="${RAI_SERVER:-rai}"
+RAI_REMOTE_BASE="${RAI_REMOTE_BASE:-/home/$RAI_USER/workspaces}"
+RAI_VOLUME="${RAI_VOLUME:-/dev/sdb}"
