@@ -16,13 +16,14 @@ fi
 ip=$(require_ip) || exit 1
 remote_path=$(remote_repo_path) || exit 1
 remote_url="ssh://$RAI_USER@$ip$remote_path"
+q_remote_path=$(shell_quote "$remote_path")
 
 # Set up repo on VM if needed
 ssh "$RAI_USER@$ip" "
-  if [ ! -d '$remote_path/.git' ]; then
-    mkdir -p '$remote_path'
-    git init '$remote_path'
-    git -C '$remote_path' config receive.denyCurrentBranch updateInstead
+  if [ ! -d $q_remote_path/.git ]; then
+    mkdir -p $q_remote_path
+    git init $q_remote_path
+    git -C $q_remote_path config receive.denyCurrentBranch updateInstead
   fi
 "
 
@@ -41,4 +42,5 @@ else
 fi
 git update-ref "$lease_ref" "$branch"
 
-ssh "$RAI_USER@$ip" "git -C '$remote_path' checkout '$branch'"
+q_branch=$(shell_quote "$branch")
+ssh "$RAI_USER@$ip" "git -C $q_remote_path checkout $q_branch"
