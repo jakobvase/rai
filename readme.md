@@ -55,3 +55,7 @@ rai ALL=(root) NOPASSWD: /usr/bin/mount /dev/mapper/data /home/rai/workspaces
 - Use absolute paths from `which cryptsetup` / `which mount` on the VM.
 - The rule is scoped to that one user and those two exact commands - `rai`
   gets no other passwordless sudo access.
+
+## Tests
+
+`bats test/` runs the test suite (requires [bats-core](https://github.com/bats-core/bats-core), tested against 1.13; `jq` is stubbed, not required). Tests run end-to-end against the real scripts with `ssh`/`scp`/`hcloud`/`jq` stubbed - see `test/test_helper.bash` for the stubbing helpers.
