@@ -27,3 +27,5 @@ ssh "$RAI_USER@$ip" "
 
 branch=$(git rev-parse --abbrev-ref HEAD)
 git push "$remote_url" "$branch"
+
+ssh "$RAI_USER@$ip" "git -C '$remote_path' checkout '$branch'"
