@@ -31,7 +31,11 @@ ssh "$RAI_USER@$ip" "
   fi
 "
 
-branch=$(git rev-parse --abbrev-ref HEAD)
+branch=$(git symbolic-ref --short -q HEAD)
+if [ -z "$branch" ]; then
+  echo "Not on a branch (detached HEAD). Checkout a branch before pushing."
+  exit 1
+fi
 lease_ref="refs/rai-remote/$branch"
 
 if [ "$force" = true ]; then
