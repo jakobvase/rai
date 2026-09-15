@@ -8,14 +8,16 @@ source "$SCRIPT_DIR/rai-provider-$RAI_PROVIDER"
 source "$SCRIPT_DIR/rai-common"
 
 ip=$(require_ip) || exit 1
+q_remote_base=$(shell_quote "$RAI_REMOTE_BASE")
+q_volume=$(shell_quote "$RAI_VOLUME")
 
 ssh -t "$RAI_USER@$ip" "
-  if mountpoint -q '$RAI_REMOTE_BASE'; then
+  if mountpoint -q $q_remote_base; then
     echo 'Already unlocked and mounted.'
     exit 0
   fi
   if [ ! -e /dev/mapper/data ]; then
-    sudo cryptsetup luksOpen '$RAI_VOLUME' data || exit 1
+    sudo cryptsetup luksOpen $q_volume data || exit 1
   fi
-  sudo mount /dev/mapper/data '$RAI_REMOTE_BASE'
+  sudo mount /dev/mapper/data $q_remote_base
 "
