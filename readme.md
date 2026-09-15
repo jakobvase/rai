@@ -34,3 +34,26 @@ They can be set, in increasing order of precedence:
 
 Both files are plain `KEY=value` shell files that get sourced directly, so
 they can run arbitrary shell - only use `.rai/config` files you trust.
+
+## Encrypted volumes
+
+If `RAI_VOLUME` points at a LUKS-encrypted volume, `rai unlock` opens and
+mounts it over SSH via `sudo cryptsetup` and `sudo mount`. For that to work
+non-interactively, the VM needs a sudoers rule granting `RAI_USER`
+passwordless access to exactly those two commands - add it via
+`visudo -f /etc/sudoers.d/rai-unlock`:
+
+```
+rai ALL=(root) NOPASSWD: /sbin/cryptsetup luksOpen /dev/sdb data
+rai ALL=(root) NOPASSWD: /usr/bin/mount /dev/mapper/data /home/rai/workspaces
+```
+
+- Replace `rai` with the actual `RAI_USER`, and the paths/args with the real
+  `RAI_VOLUME`/`RAI_REMOTE_BASE` - sudoers matches commands literally, so any
+  mismatch (wrong absolute path, different args) falls back to requiring a
+  password instead of granting access.
+- Use absolute paths from `which cryptsetup` / `which mount` on the VM.
+- The rule is scoped to that one user and those two exact commands - `rai`
+  gets no other passwordless sudo access.
+- The file must be owned by root with mode `0440`; `visudo -f` validates
+  syntax before saving.
