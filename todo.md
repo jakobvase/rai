@@ -13,3 +13,4 @@
   /rai/rai-config: line 24: _rai_preset[$_rai_var]: bad array subscript
   ```
 - [x] rai-push needs to force-push (or force-with-lease). I often make changes to the commits afterwards.
+- [] rai-push needs a `--force` flag, for when it gets out of sync.
