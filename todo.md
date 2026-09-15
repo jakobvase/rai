@@ -6,3 +6,9 @@
 - [] rai-push doesn't switch the current branch. It should.
 - [x] should save things to files in the repo (like username, remote machine name, etc.), and also allow overrides in the home folder.
 - [] got an error with `rai-ssh`: bash: warning: setlocale: LC_CTYPE: cannot change locale (UTF-8): No such file or directory
+- [] rai-config warns with the following, but succeeds:
+  ```
+  /rai/rai-config: line 21: declare: -A: invalid option
+  declare: usage: declare [-afFirtx] [-p] [name[=value] ...]
+  /rai/rai-config: line 24: _rai_preset[$_rai_var]: bad array subscript
+  ```
