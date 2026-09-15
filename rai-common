@@ -33,3 +33,16 @@ remote_repo_path() {
   fi
   echo "$RAI_REMOTE_BASE/$(basename "$RAI_REPO_ROOT")"
 }
+
+# shell_quote - Shell-escape a value for safe interpolation into a remote
+# command string. Values like repo/branch names get embedded inside a
+# double-quoted string passed to `ssh ... "..."`, which itself uses single
+# quotes (e.g. `cd '$remote_path'`); a value containing a `'` breaks out of
+# that quoting and lets it inject arbitrary remote commands. `printf '%q'`
+# produces a properly escaped form (falling back to POSIX `'...'`-style
+# quoting for anything with special characters), safe for both bash and
+# POSIX sh remote shells.
+# Usage: q_path=$(shell_quote "$remote_path")
+shell_quote() {
+  printf '%q' "$1"
+}
