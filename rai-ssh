@@ -9,11 +9,13 @@ source "$SCRIPT_DIR/rai-common"
 
 ip=$(require_ip) || exit 1
 remote_path=$(remote_repo_path) || exit 1
+q_remote_base=$(shell_quote "$RAI_REMOTE_BASE")
+q_remote_path=$(shell_quote "$remote_path")
 
 ssh -t "$RAI_USER@$ip" "
-  if ! mountpoint -q '$RAI_REMOTE_BASE'; then
+  if ! mountpoint -q $q_remote_base; then
     echo 'Workspace volume is not mounted. Run \`rai unlock\` first.' >&2
     exit 1
   fi
-  mkdir -p '$remote_path' && cd '$remote_path' && exec \$SHELL
+  mkdir -p $q_remote_path && cd $q_remote_path && exec \$SHELL
 "
