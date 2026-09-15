@@ -12,4 +12,13 @@ if [ -z "$ip" ] || [ "$ip" = "null" ]; then
   exit 1
 fi
 
-ssh -t "$RAI_USER@$ip" "sudo cryptsetup luksOpen $RAI_VOLUME data && sudo mount /dev/mapper/data $RAI_REMOTE_BASE"
+ssh -t "$RAI_USER@$ip" "
+  if mountpoint -q '$RAI_REMOTE_BASE'; then
+    echo 'Already unlocked and mounted.'
+    exit 0
+  fi
+  if [ ! -e /dev/mapper/data ]; then
+    sudo cryptsetup luksOpen '$RAI_VOLUME' data || exit 1
+  fi
+  sudo mount /dev/mapper/data '$RAI_REMOTE_BASE'
+"
