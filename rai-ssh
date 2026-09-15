@@ -10,4 +10,4 @@ ip=$(provider_ip)
 repo_name=$(basename "$RAI_REPO_ROOT")
 remote_path="$RAI_REMOTE_BASE/$repo_name"
 
-ssh -t "$RAI_USER@$ip" "cd '$remote_path' && exec \$SHELL"
+ssh -t "$RAI_USER@$ip" "mkdir -p '$remote_path' && cd '$remote_path' && exec \$SHELL"
