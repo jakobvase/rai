@@ -1,4 +1,4 @@
-# rai-provider-hcloud - Hetzner Cloud provider for rai-* scripts.
+# rai-provider-hetzner - Hetzner Cloud provider for rai-* scripts.
 # Sourced (not executed) by each rai-* script, after rai-config, based on
 # RAI_PROVIDER. Requires `hcloud` to be installed and HCLOUD_TOKEN to be a
 # valid Hetzner API token.

@@ -1,0 +1,28 @@
+# rai-provider-selfhosted - Static/self-hosted-machine provider for rai-* scripts.
+# Sourced (not executed) by each rai-* script, after rai-config, based on
+# RAI_PROVIDER. Points at an already-running machine (e.g. a hypervisor you
+# control) via a fixed address instead of a cloud API - useful when there's
+# no power-management integration, so it's always assumed to be on.
+#
+# Configure the address via RAI_STATIC_IP (an IP or hostname), in
+# ~/.rai/config or <repo-root>/.rai/config.
+
+provider_ip() {
+  if [ -z "$RAI_STATIC_IP" ]; then
+    echo "RAI_STATIC_IP is not set (required for RAI_PROVIDER=selfhosted)." >&2
+    return 1
+  fi
+  echo "$RAI_STATIC_IP"
+}
+
+provider_status() {
+  echo "running"
+}
+
+provider_start() {
+  echo "RAI_PROVIDER=selfhosted: nothing to start, machine is assumed to be always on."
+}
+
+provider_stop() {
+  echo "RAI_PROVIDER=selfhosted: nothing to stop, machine is assumed to be always on."
+}
