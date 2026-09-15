@@ -12,7 +12,7 @@
 # they're local files the user controls, but treat them accordingly -
 # don't source config files you didn't write or review.
 
-RAI_REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"
+RAI_REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || true
 
 # Config files assign unconditionally, so remember which of these vars the
 # caller already exported and restore them afterwards - env vars must win

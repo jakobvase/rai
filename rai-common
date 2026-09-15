@@ -9,7 +9,11 @@
 # Usage: ip=$(require_ip) || exit 1
 require_ip() {
   local ip
-  ip=$(provider_ip)
+  # `|| true` keeps a failing provider_ip from tripping the caller's
+  # `set -e` before we get a chance to print the friendlier message below
+  # (a plain `x=$(cmd)` assignment is not a tested condition, so under
+  # errexit its failure would otherwise abort right here).
+  ip=$(provider_ip) || true
   if [ -z "$ip" ] || [ "$ip" = "null" ]; then
     echo "Could not get VM IP. Is the server running?" >&2
     return 1
