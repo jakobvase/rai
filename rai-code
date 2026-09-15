@@ -1,11 +1,10 @@
 #!/bin/bash
 # rai code - Open VS Code connected to the VM at the current repo
 
-SERVER_NAME="${RAI_SERVER:-rai}"
-RAI_USER="${RAI_USER:-user}"
-REMOTE_BASE="${RAI_REMOTE_BASE:-/home/$RAI_USER/workspaces}"
+SCRIPT_DIR="$(dirname "$(realpath "$0")")"
+source "$SCRIPT_DIR/rai-config"
 
-ip=$(hcloud server describe "$SERVER_NAME" -o json | jq -r '.public_net.ipv4.ip')
-repo_name=$(basename "$(git rev-parse --show-toplevel)")
+ip=$(hcloud server describe "$RAI_SERVER" -o json | jq -r '.public_net.ipv4.ip')
+repo_name=$(basename "$RAI_REPO_ROOT")
 
-code --remote ssh-remote+"$RAI_USER@$ip" "$REMOTE_BASE/$repo_name"
+code --remote ssh-remote+"$RAI_USER@$ip" "$RAI_REMOTE_BASE/$repo_name"

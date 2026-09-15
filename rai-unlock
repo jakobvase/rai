@@ -1,12 +1,10 @@
 #!/bin/bash
 # rai unlock - Unlock the encrypted workspace volume
 
-SERVER_NAME="${RAI_SERVER:-rai}"
-RAI_USER="${RAI_USER:-user}"
-RAI_REMOTE_BASE="${RAI_REMOTE_BASE:-/home/$RAI_USER/workspaces}"
-RAI_VOLUME="${RAI_VOLUME:-/dev/sdb}"
+SCRIPT_DIR="$(dirname "$(realpath "$0")")"
+source "$SCRIPT_DIR/rai-config"
 
-ip=$(hcloud server describe "$SERVER_NAME" -o json | jq -r '.public_net.ipv4.ip')
+ip=$(hcloud server describe "$RAI_SERVER" -o json | jq -r '.public_net.ipv4.ip')
 
 if [ -z "$ip" ] || [ "$ip" = "null" ]; then
   echo "Could not get VM IP. Is the server running?"

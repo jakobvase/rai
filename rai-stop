@@ -1,7 +1,8 @@
 #!/bin/bash
 # rai stop - Shut down the RAI VM
 
-SERVER_NAME="${RAI_SERVER:-rai}"
+SCRIPT_DIR="$(dirname "$(realpath "$0")")"
+source "$SCRIPT_DIR/rai-config"
 
-echo "Stopping $SERVER_NAME..."
-hcloud server shutdown "$SERVER_NAME"
+echo "Stopping $RAI_SERVER..."
+hcloud server shutdown "$RAI_SERVER"
