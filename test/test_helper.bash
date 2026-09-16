@@ -44,3 +44,17 @@ stub_ssh_eval() {
     eval "$cmd"
   '
 }
+
+# stub_mosh_eval - Install a fake `mosh` for injection-hardening tests,
+# symmetric to stub_ssh_eval above. mosh's invocation shape is
+# `mosh [-p PORT] user@host -- bash -c "..."` rather than ssh's
+# `ssh -t user@host "..."` - the trailing arg is still the command string
+# to run remotely (now wrapped in `bash -c`), so grabbing and eval'ing the
+# last argv entry works the same way here as it does for ssh.
+stub_mosh_eval() {
+  make_stub mosh '
+    { printf "%s\n" "$@"; echo "---"; } >> "$STUB_DIR/mosh_invocation"
+    cmd="${@: -1}"
+    eval "$cmd"
+  '
+}
