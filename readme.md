@@ -4,9 +4,12 @@ Scripts to manage working on codebases on a remote vm running ai/llm tools, if y
 
 To install, download/clone this repo and add `export PATH="$PATH:<path-to-rai>/bin"` to your shell setup (`~/.bashrc` or similar).
 
+Note: As is evident, a lot of this tool was written with the help of AI.
+I intend to rewrite it for human consumption when I have the spare time, likely not soon.
+
 ## Requirements
 
-- `jq`, `git`, `ssh`, and `scp`.
+- `jq`, `git`, `ssh`, and `scp` are required. `code` and `mosh` are optional, but helpful.
 
 VM management goes through a provider, set via `RAI_PROVIDER` (default: `hetzner`). Built-in providers:
 
