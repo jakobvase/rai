@@ -7,6 +7,12 @@
 # Configure the address via RAI_STATIC_IP (an IP or hostname), in
 # ~/.rai/rai.conf or <repo-root>/.rai/rai.conf.
 
+# Unlike every other config var, rai-config gives RAI_STATIC_IP no hardcoded
+# fallback (there isn't a sensible one) - so if it was never exported nor set
+# in either config file, it's left truly unset, not just empty, which would
+# trip `set -u` below instead of reaching provider_ip's own error message.
+RAI_STATIC_IP="${RAI_STATIC_IP:-}"
+
 provider_ip() {
   if [ -z "$RAI_STATIC_IP" ]; then
     echo "RAI_STATIC_IP is not set (required for RAI_PROVIDER=selfhosted)." >&2
