@@ -16,6 +16,44 @@ load test_helper
   run "$REPO_ROOT/rai" bogus-command
   [ "$status" -eq 1 ]
   [[ "$output" == *"Usage: rai"* ]]
+  assert_lists_all_subcommands
+}
+
+# assert_lists_all_subcommands - the help/usage text mentions each of the
+# nine subcommands, so a new one added to the case statement doesn't
+# silently go undocumented.
+assert_lists_all_subcommands() {
+  local cmd
+  for cmd in start stop push pull cp ssh mosh code unlock; do
+    [[ "$output" == *"$cmd"* ]]
+  done
+}
+
+@test "rai help prints help and exits 0" {
+  run "$REPO_ROOT/rai" help
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"Usage: rai"* ]]
+  assert_lists_all_subcommands
+}
+
+@test "rai -h prints help and exits 0" {
+  run "$REPO_ROOT/rai" -h
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"Usage: rai"* ]]
+  assert_lists_all_subcommands
+}
+
+@test "rai --help prints help and exits 0" {
+  run "$REPO_ROOT/rai" --help
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"Usage: rai"* ]]
+  assert_lists_all_subcommands
+}
+
+@test "rai with no args lists all subcommands" {
+  run "$REPO_ROOT/rai"
+  [ "$status" -eq 1 ]
+  assert_lists_all_subcommands
 }
 
 @test "rai mosh reaches rai-mosh with args forwarded" {
