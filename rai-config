@@ -7,10 +7,16 @@
 #   3. ~/.rai/config          (per-machine override, not committed)
 #   4. Hardcoded fallback defaults below
 #
-# Both config files are plain `KEY=value` shell files and are sourced
-# directly, i.e. they can run arbitrary shell. That's acceptable since
-# they're local files the user controls, but treat them accordingly -
-# don't source config files you didn't write or review.
+# Both config files are plain `KEY=value` text files, one assignment per
+# line, and are parsed (not sourced/eval'd) by _rai_load_config_file below.
+# Only lines assigning one of the known $_rai_config_vars are applied; a
+# value may optionally be wrapped in matching single or double quotes,
+# which are stripped, but is otherwise taken as literal text - there is no
+# `$(...)`, backtick, or variable-expansion support, so a config file
+# cannot run arbitrary shell no matter what it contains. This matters most
+# for <repo-root>/.rai/config, since that one is meant to be committed and
+# shared with the team (and so can arrive via a clone or a PR, not just a
+# file you personally wrote).
 
 RAI_REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || true
 
@@ -30,8 +36,65 @@ for _rai_var in $_rai_config_vars; do
   fi
 done
 
-[ -f "$HOME/.rai/config" ] && source "$HOME/.rai/config"
-[ -n "$RAI_REPO_ROOT" ] && [ -f "$RAI_REPO_ROOT/.rai/config" ] && source "$RAI_REPO_ROOT/.rai/config"
+# _rai_load_config_file <path> - strict, non-executing `KEY=value` parser.
+# Reads $1 line by line and applies only lines of the form KEY=value where
+# KEY is one of $_rai_config_vars; everything else (blank lines, `#`
+# comments, unrecognized keys, malformed lines) is skipped, with a warning
+# on stderr for anything that isn't blank/a comment. A value may be wrapped
+# in one matching pair of double or single quotes, which is stripped; the
+# result is assigned verbatim via `printf -v`, with no further shell
+# evaluation, so `$(...)`, backticks, and variable expansion in a value are
+# inert literal text, not executed. Always returns 0, so a bad line in a
+# config file can never abort a caller running under `set -e`.
+_rai_load_config_file() {
+  local file="$1" line line_no=0 key value allowed is_allowed
+  while IFS= read -r line || [ -n "$line" ]; do
+    line_no=$((line_no + 1))
+
+    # Trim leading/trailing whitespace.
+    line="${line#"${line%%[![:space:]]*}"}"
+    line="${line%"${line##*[![:space:]]}"}"
+
+    [ -z "$line" ] && continue
+    case "$line" in
+      \#*) continue ;;
+    esac
+
+    case "$line" in
+      *=*)
+        key="${line%%=*}"
+        value="${line#*=}"
+        ;;
+      *)
+        echo "rai-config: warning: ignoring malformed line $line_no in $file" >&2
+        continue
+        ;;
+    esac
+
+    is_allowed=""
+    for allowed in $_rai_config_vars; do
+      [ "$key" = "$allowed" ] && { is_allowed=1; break; }
+    done
+    if [ -z "$is_allowed" ]; then
+      echo "rai-config: warning: ignoring unrecognized key '$key' in $file" >&2
+      continue
+    fi
+
+    # Strip one matching pair of surrounding quotes, if present. No other
+    # shell syntax in the value (quoted or not) is interpreted.
+    case "$value" in
+      \"*\") value="${value#\"}"; value="${value%\"}" ;;
+      \'*\') value="${value#\'}"; value="${value%\'}" ;;
+    esac
+
+    printf -v "$key" '%s' "$value"
+  done < "$file"
+  return 0
+}
+
+[ -f "$HOME/.rai/config" ] && _rai_load_config_file "$HOME/.rai/config"
+[ -n "$RAI_REPO_ROOT" ] && [ -f "$RAI_REPO_ROOT/.rai/config" ] && _rai_load_config_file "$RAI_REPO_ROOT/.rai/config"
+unset -f _rai_load_config_file
 
 for _rai_var in $_rai_config_vars; do
   eval "_rai_was_preset=\${_rai_preset_set_${_rai_var}:-}"
