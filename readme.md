@@ -1,6 +1,7 @@
 # Remote AI
 
-Scripts to manage working on codebases on a remote vm running ai/llm tools, if you don't trust them to run on your own machine.
+Scripts to manage working on codebases on a remote vm running ai/llm tools.
+I don't trust llms enough to run them on my own machine, with all the things I have access to, and this is my solution.
 
 To install, download/clone this repo and add `export PATH="$PATH:<path-to-rai>/bin"` to your shell setup (`~/.bashrc` or similar).
 
