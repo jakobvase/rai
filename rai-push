@@ -13,6 +13,36 @@ if [ "${1:-}" = "--force" ]; then
   shift
 fi
 
+# `git push` only ever sends committed history, so uncommitted changes
+# (staged or unstaged) silently stay behind - the user may assume the VM
+# now matches what's on screen when it doesn't. Untracked files are left
+# out of this check: they're never part of what a push would carry either
+# way, and are a much weaker signal that the user meant to bring them along.
+# This has to run before any remote work - no reason to touch the VM just
+# to bail out on a local confirmation. `|| true` guards the assignment
+# under `set -e`: grep exits 1 on a clean tree (no matching lines), which
+# isn't a real failure here.
+uncommitted="$(git status --porcelain | grep -v '^??' || true)"
+if [ -n "$uncommitted" ]; then
+  echo "Warning: you have uncommitted changes that will NOT be pushed (only committed history is sent):" >&2
+  echo "$uncommitted" >&2
+  if [ -t 0 ]; then
+    read -r -p "Continue pushing anyway? [y/N] " reply
+    case "$reply" in
+      [yY]*) ;;
+      *)
+        echo "Aborted." >&2
+        exit 1
+        ;;
+    esac
+  else
+    # No tty to prompt (script/CI/test invocation) - never block waiting
+    # for input that will never come. Proceed, but make sure the warning
+    # above still made it to the user rather than being silently skipped.
+    echo "Non-interactive session (no tty) - proceeding without confirmation." >&2
+  fi
+fi
+
 ip=$(require_ip) || exit 1
 remote_path=$(remote_repo_path) || exit 1
 remote_url="ssh://$RAI_USER@$ip$remote_path"

@@ -247,3 +247,52 @@ stub_ssh_checkout_result() {
   invocation="$(cat "$STUB_DIR/ssh_invocation")"
   [[ "$invocation" == *"checkout -q"* ]]
 }
+
+@test "rai-push: clean working tree pushes without any uncommitted-changes warning" {
+  repo="$BATS_TEST_TMPDIR/repo"
+  init_repo "$repo" "feature-branch"
+
+  # Same harness caveat as earlier tests re: the final checkout call failing.
+  run env -C "$repo" "$REPO_ROOT/rai-push"
+
+  [[ "$output" != *"Warning"* ]]
+  [ -e "$STUB_DIR/git_push_invocation" ]
+}
+
+@test "rai-push: untracked-only changes do not trigger the uncommitted-changes warning" {
+  repo="$BATS_TEST_TMPDIR/repo"
+  init_repo "$repo" "feature-branch"
+  echo "scratch" > "$repo/untracked.txt"
+
+  run env -C "$repo" "$REPO_ROOT/rai-push"
+
+  [[ "$output" != *"Warning"* ]]
+  [ -e "$STUB_DIR/git_push_invocation" ]
+}
+
+@test "rai-push: uncommitted tracked changes warn but don't hang, and still push non-interactively" {
+  repo="$BATS_TEST_TMPDIR/repo"
+  init_repo "$repo" "feature-branch"
+  ( cd "$repo" && echo v1 > f.txt && "$REAL_GIT" add f.txt && "$REAL_GIT" commit -q -m "add f" )
+  echo v2 > "$repo/f.txt"   # unstaged modification to an already-tracked file
+
+  # `run` gives the command no tty, exercising exactly the non-interactive
+  # path - if this hung, the test would time out instead of completing.
+  run env -C "$repo" "$REPO_ROOT/rai-push"
+
+  [[ "$output" == *"Warning: you have uncommitted changes"* ]]
+  [[ "$output" == *"Non-interactive session"* ]]
+  # Warned but still proceeded - push machinery still ran.
+  [ -e "$STUB_DIR/git_push_invocation" ]
+}
+
+@test "rai-push: staged uncommitted changes also trigger the warning" {
+  repo="$BATS_TEST_TMPDIR/repo"
+  init_repo "$repo" "feature-branch"
+  ( cd "$repo" && echo v1 > new.txt && "$REAL_GIT" add new.txt )
+
+  run env -C "$repo" "$REPO_ROOT/rai-push"
+
+  [[ "$output" == *"Warning: you have uncommitted changes"* ]]
+  [ -e "$STUB_DIR/git_push_invocation" ]
+}
