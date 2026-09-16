@@ -40,6 +40,15 @@ teardown() {
   [[ "$invocation" == *"testuser@127.0.0.1:/remote/dest/path"* ]]
 }
 
+@test "rai-cp passes a -- separator before the positional args, so a dash-prefixed local path can't be parsed as an scp flag" {
+  run "$REPO_ROOT/rai-cp" --raw localfile /remote/dest/path
+  [ "$status" -eq 0 ]
+  mapfile -t lines < "$STUB_DIR/scp_invocation"
+  [ "${lines[0]}" = "--" ]
+  [ "${lines[1]}" = "localfile" ]
+  [ "${lines[2]}" = "testuser@127.0.0.1:/remote/dest/path" ]
+}
+
 @test "rai-cp without --raw, outside a git repo, fails with a clear error" {
   run env -C "$BATS_TEST_TMPDIR" "$REPO_ROOT/rai-cp" localfile dest/path
   [ "$status" -eq 1 ]

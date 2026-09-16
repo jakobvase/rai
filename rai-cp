@@ -33,4 +33,4 @@ else
   remote_path="$(remote_repo_path)/$dest"
 fi
 
-scp "$src" "$RAI_USER@$ip:$remote_path"
+scp -- "$src" "$RAI_USER@$ip:$remote_path"
