@@ -4,15 +4,75 @@ set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 
+# Keep in sync with the case pattern below.
+COMMANDS=(start stop push pull cp ssh mosh code unlock)
+
+# fallback_description CMD - Hardcoded one-line description for CMD, used
+# only if description_for can't extract one from the rai-CMD file itself
+# (belt-and-suspenders so a malformed header doesn't silently drop a
+# command from the help output).
+fallback_description() {
+  case "$1" in
+    start) echo "Start the RAI VM if not running" ;;
+    stop) echo "Shut down the RAI VM" ;;
+    push) echo "Push current git repo to RAI VM" ;;
+    pull) echo "Pull changes from VM back to local repo" ;;
+    cp) echo "Copy a local file to the same relative path in the current repo on the VM" ;;
+    ssh) echo "SSH into the VM at the current repo's workspace directory" ;;
+    mosh) echo "mosh into the VM, attaching to (or creating) a tmux session scoped to the current repo" ;;
+    code) echo "Open VS Code connected to the VM at the current repo" ;;
+    unlock) echo "Unlock the encrypted workspace volume" ;;
+    *) echo "" ;;
+  esac
+}
+
+# description_for CMD - One-line description of CMD, for the help output.
+# Source of truth is line 2 of rai-CMD itself, e.g.
+# "# rai code - Open VS Code connected to the VM at the current repo", so
+# the description can't drift from the script it's describing. Falls back
+# to fallback_description() above if that file is missing or its header
+# doesn't match the expected "# rai CMD - ..." shape.
+description_for() {
+  local cmd="$1" file="$SCRIPT_DIR/rai-$cmd" line prefix
+  if [ -f "$file" ]; then
+    line="$(sed -n '2p' "$file")"
+    prefix="# rai $cmd - "
+    if [[ "$line" == "$prefix"* ]]; then
+      echo "${line#"$prefix"}"
+      return
+    fi
+  fi
+  fallback_description "$cmd"
+}
+
+print_help() {
+  echo "rai - manage a remote dev VM for AI/LLM tools you'd rather not run locally."
+  echo
+  echo "Usage: rai <command> [args]"
+  echo
+  echo "Commands:"
+  local cmd
+  for cmd in "${COMMANDS[@]}"; do
+    printf '  %-8s %s\n' "$cmd" "$(description_for "$cmd")"
+  done
+  printf '  %-8s %s\n' "help" "Show this help message (also -h, --help)"
+  echo
+  echo "See readme.md for full configuration details (env vars, .rai/rai.conf, providers)."
+}
+
 COMMAND="${1:-}"
 
 case "$COMMAND" in
+  help|-h|--help)
+    print_help
+    exit 0
+    ;;
   start|stop|push|pull|cp|ssh|mosh|code|unlock)
     shift
     "$SCRIPT_DIR/rai-$COMMAND" "$@"
     ;;
   *)
-    echo "Usage: rai <start|stop|push|pull|cp|ssh|mosh|code|unlock>"
+    print_help >&2
     exit 1
     ;;
 esac
