@@ -1,0 +1,48 @@
+#!/bin/bash
+# rai mosh - mosh into the VM, attaching to (or creating) a tmux session
+# scoped to the current repo, so a dropped connection (wifi blip, laptop
+# sleep, network change) resumes exactly where it left off.
+set -euo pipefail
+
+SCRIPT_DIR="$(dirname "$(realpath "$0")")"
+source "$SCRIPT_DIR/rai-config"
+source "$SCRIPT_DIR/rai-provider-$RAI_PROVIDER"
+source "$SCRIPT_DIR/rai-common"
+
+ip=$(require_ip) || exit 1
+remote_path=$(remote_repo_path) || exit 1
+q_remote_base=$(shell_quote "$RAI_REMOTE_BASE")
+q_remote_path=$(shell_quote "$remote_path")
+
+# Per-repo session name so two different repos checked out against the same
+# VM get two independent tmux sessions instead of colliding in one.
+session="rai-$(basename "$remote_path")"
+q_session=$(shell_quote "$session")
+
+mosh_args=("$RAI_USER@$ip")
+if [ -n "${RAI_MOSH_PORT:-}" ]; then
+  mosh_args+=(-p "$RAI_MOSH_PORT")
+fi
+
+# mosh has no "run a check first, then hand me a shell" hook the way
+# `ssh -t user@host "checks; exec $SHELL"` does - the command after `--` is
+# what mosh runs remotely, so the mountpoint check has to live inside this
+# bash -c string. Same error message/behavior as rai-ssh, same shell_quote
+# discipline on every interpolated value.
+#
+# `tmux new-session -A -s <name>` attaches if the session already exists,
+# creates it otherwise; `-c $q_remote_path` only takes effect on creation,
+# so reattaching keeps whatever cwd the session is already sitting in -
+# that's the "resume exactly where I was" behavior, not a bug.
+#
+# No terminal-reset trap here (unlike rai-ssh): an abrupt drop doesn't kill
+# mosh-client or the remote session, so the failure mode that trap exists
+# for doesn't occur with mosh.
+mosh "${mosh_args[@]}" -- bash -c "
+  if ! mountpoint -q $q_remote_base; then
+    echo 'Workspace volume is not mounted. Run \`rai unlock\` first.' >&2
+    exit 1
+  fi
+  mkdir -p $q_remote_path
+  exec tmux new-session -A -s $q_session -c $q_remote_path
+"

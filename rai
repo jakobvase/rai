@@ -7,12 +7,12 @@ SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 COMMAND="${1:-}"
 
 case "$COMMAND" in
-  start|stop|push|pull|cp|ssh|code|unlock)
+  start|stop|push|pull|cp|ssh|mosh|code|unlock)
     shift
     "$SCRIPT_DIR/rai-$COMMAND" "$@"
     ;;
   *)
-    echo "Usage: rai <start|stop|push|pull|cp|ssh|code|unlock>"
+    echo "Usage: rai <start|stop|push|pull|cp|ssh|mosh|code|unlock>"
     exit 1
     ;;
 esac

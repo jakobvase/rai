@@ -28,7 +28,7 @@ RAI_REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || true
 # separate "was it set at all" flag (`_rai_preset_set_$name`), since a
 # preset-but-empty value must still be restored as empty rather than treated
 # as unset.
-_rai_config_vars="RAI_SERVER RAI_USER RAI_REMOTE_BASE RAI_VOLUME RAI_PROVIDER RAI_STATIC_IP"
+_rai_config_vars="RAI_SERVER RAI_USER RAI_REMOTE_BASE RAI_VOLUME RAI_PROVIDER RAI_STATIC_IP RAI_MOSH_PORT"
 for _rai_var in $_rai_config_vars; do
   if [ -n "${!_rai_var+x}" ]; then
     eval "_rai_preset_set_${_rai_var}=1"
