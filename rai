@@ -14,15 +14,15 @@ COMMANDS=(init start stop push pull cp ssh mosh code unlock)
 fallback_description() {
   case "$1" in
     init) echo "Interactively scaffold <repo-root>/.rai/rai.conf" ;;
-    start) echo "Start the RAI VM if not running" ;;
-    stop) echo "Shut down the RAI VM" ;;
-    push) echo "Push current git repo to RAI VM" ;;
+    start) echo "Start the VM if not running" ;;
+    stop) echo "Shut down the VM" ;;
+    push) echo "Push current git repo to VM" ;;
     pull) echo "Pull changes from VM back to local repo" ;;
-    cp) echo "Copy a local file to the same relative path in the current repo on the VM" ;;
+    cp) echo "Copy a local file to the same relative path in the current repo on the VM. Can also copy files outside the repo" ;;
     ssh) echo "SSH into the VM at the current repo's workspace directory" ;;
-    mosh) echo "mosh into the VM, attaching to (or creating) a tmux session scoped to the current repo" ;;
+    mosh) echo "mosh into the VM, attaching to (or creating) a tmux session scoped to the current repo. Useful if you often stop and start your sessions" ;;
     code) echo "Open VS Code connected to the VM at the current repo" ;;
-    unlock) echo "Unlock the encrypted workspace volume" ;;
+    unlock) echo "Unlock encrypted workspace volume. This has additional setup steps, see readme for details" ;;
     *) echo "" ;;
   esac
 }
