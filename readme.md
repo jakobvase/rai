@@ -19,6 +19,12 @@ For `rai mosh` to work, you must install `mosh` locally, and the VM needs `mosh-
 
 ## Configuration
 
+Run `rai init` to interactively generate `<repo-root>/.rai/rai.conf` instead
+of hand-writing it (see below) - it prompts for the provider and, depending
+on the provider, the server name or static IP, then fills in the rest as
+commented-out defaults to uncomment and edit as needed. Use `-y`/`--yes` to
+skip the prompts and accept resolved defaults non-interactively.
+
 All `rai-*` scripts source `rai-config`, which loads these variables, all optional:
 
 - RAI_SERVER - VM name (default: rai)
