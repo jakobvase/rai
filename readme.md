@@ -95,6 +95,13 @@ Requirements, not automated by any script here:
   repo does no firewall automation for either provider, so opening the
   port(s) is on you.
 
+If you run `rai mosh` against multiple repos on the same VM at once and use
+`RAI_MOSH_PORT`, give each repo its own port - two `mosh-server` processes on
+the same VM can't share one UDP port, so a value that works for a single repo
+will collide the moment a second one connects concurrently. Set it in
+`<repo-root>/.rai/rai.conf` (not `~/.rai/rai.conf`) so it's scoped to that
+repo rather than applied VM-wide.
+
 ## Tests
 
 `bats test/` runs the test suite (requires [bats-core](https://github.com/bats-core/bats-core), tested against 1.13; `jq` is stubbed, not required). Tests run end-to-end against the real scripts with `ssh`/`mosh`/`scp`/`hcloud`/`jq` stubbed - see `test/test_helper.bash` for the stubbing helpers.
