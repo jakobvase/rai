@@ -2,12 +2,9 @@
 
 Viewed through the lens of: what's needed before open-sourcing this.
 
-- [x] I get an "Already on main" whenever I push, which is annoying.
-  - Fixed: remote checkout now runs `git checkout -q`, which suppresses the "Already on"/"Switched to" message without hiding real errors or affecting exit codes.
-- [x] User friendlyness
-  - [x] If you push with local changes, you should probably receive a warning that only committed changes get pushed, and be asked if you want to continue?
-    - Implemented: rai-push warns (stderr) on uncommitted tracked/staged changes before doing any remote work. Untracked-only files don't trigger it - `git push` never carries them either way, so they're a weak signal. Interactive (tty): prompts y/N, aborts on anything else. Non-interactive (scripts/CI/tests): prints the warning and proceeds without blocking - rai-push needs to stay scriptable, and a hard block would need a new flag nobody's asked for.
-- [] Handling abrupt stops in connection well - specifically `rai-ssh`, not `rai-code` (VS Code Remote-SSH already handles its own reconnects).
+- [] User friendlyness
+  - [] anything else here? Better messages for what's happening? I think letting the subcommands' output bleed through is generally a good idea, but maybe there should be some `-q` flags to suppress most of it?
+- [] Handling abrupt stops in connection well - specifically `rai-ssh`.
   - Goal: don't lose work in a remote shell (e.g. a long-running agent task) when the SSH connection drops (laptop sleep, wifi blip, etc).
   - Undecided - this isn't a space we've worked in before, needs more research. Options on the table:
     - SSH keepalive tuning (`ServerAliveInterval`/`ServerAliveCountMax`) - reduces how often drops happen, doesn't help once one does.
@@ -19,12 +16,9 @@ Viewed through the lens of: what's needed before open-sourcing this.
   - Tradeoff: delete+recreate saves more (Hetzner still bills for a stopped server's attached volume/reserved resources), but loses the server itself (new IP, volume reattachment, reprovisioning) - bigger blast radius, and provider-specific (meaningless for `selfhosted`, which has nothing to create/delete).
 - [] Consider user installation. Would be good if this could be easily published to brew/apt/other package repos, what's required for that?
   - Not a blocker for open-sourcing - readme already documents a manual PATH install, which is normal for a fresh OSS release. Defer until there's actual demand for it.
-
-## Open-source readiness (new)
-
 - [] Add a LICENSE file. Blocker: without one, nobody knows what they're legally permitted to do with the code. Pick MIT or Apache-2.0 (common defaults for a tool like this).
-- [x] `.rai/config` arbitrary shell execution.
-  - Fixed: `rai-config` no longer `source`s `.rai/config` files. It now parses them with a strict line-by-line `KEY=value` parser - only known `RAI_*` keys are applied, values may be quoted but are never evaluated (`$(...)`/backticks/expansion are inert literal text), and unrecognized/malformed lines are skipped with a warning instead of aborting. Closes the risk of a committed `<repo-root>/.rai/config` (or a malicious PR touching it) running arbitrary code on anyone who runs a `rai-*` command in that checkout. readme's Configuration section updated to match (files are now safe to commit and share, not "only use files you trust").
 - [] Consider a CONTRIBUTING.md - optional for a small personal-tool release, can add later if/when the project gets external contributors.
+- [] `git lfs` maybe breaks rai?
+- [] `rai push` should maybe only push the last N commits? (like the depth in github actions)
 
 Checked already, no action needed: scanned full git history for leaked tokens/secrets/credentials - clean. No git remote configured yet either.
