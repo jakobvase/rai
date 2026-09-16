@@ -4,6 +4,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 source "$SCRIPT_DIR/rai-config"
+# shellcheck source=/dev/null
 source "$SCRIPT_DIR/rai-provider-$RAI_PROVIDER"
 source "$SCRIPT_DIR/rai-common"
 
@@ -53,6 +54,9 @@ q_remote_path=$(shell_quote "$remote_path")
 # unconditional, so it's re-asserted every push and retroactively applies
 # to repos that were already `git init`'d before the setting existed - not
 # just newly created ones.
+# shellcheck disable=SC2029  # intentional: q_remote_path is already
+# shell_quote()'d, so it's meant to expand client-side into the command
+# string sent to the remote shell, not to be re-quoted for local expansion.
 ssh "$RAI_USER@$ip" "
   if [ ! -d $q_remote_path/.git ]; then
     mkdir -p $q_remote_path
@@ -85,6 +89,8 @@ q_branch=$(shell_quote "$branch")
 # harmless but noisy on every single push. -q only silences that feedback
 # message; real errors (bad ref, conflicting local changes) and the exit
 # code still come through untouched.
+# shellcheck disable=SC2029  # intentional: q_remote_path/q_branch are
+# already shell_quote()'d, so they're meant to expand client-side (see above).
 if ! ssh "$RAI_USER@$ip" "git -C $q_remote_path checkout -q $q_branch"; then
   echo "Remote checkout of '$branch' failed after push; remote may be out of sync. Not recording lease." >&2
   exit 1

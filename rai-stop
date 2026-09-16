@@ -4,6 +4,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 source "$SCRIPT_DIR/rai-config"
+# shellcheck source=/dev/null
 source "$SCRIPT_DIR/rai-provider-$RAI_PROVIDER"
 
 provider_stop
