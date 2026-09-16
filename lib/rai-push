@@ -3,9 +3,11 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
+# shellcheck source=lib/rai-config
 source "$SCRIPT_DIR/rai-config"
 # shellcheck source=/dev/null
 source "$SCRIPT_DIR/rai-provider-$RAI_PROVIDER"
+# shellcheck source=lib/rai-common
 source "$SCRIPT_DIR/rai-common"
 
 force=false
