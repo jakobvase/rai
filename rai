@@ -33,7 +33,8 @@ fallback_description() {
 # to fallback_description() above if that file is missing or its header
 # doesn't match the expected "# rai CMD - ..." shape.
 description_for() {
-  local cmd="$1" file="$SCRIPT_DIR/rai-$cmd" line prefix
+  local cmd="$1"
+  local file="$SCRIPT_DIR/rai-$cmd" line prefix
   if [ -f "$file" ]; then
     line="$(sed -n '2p' "$file")"
     prefix="# rai $cmd - "
