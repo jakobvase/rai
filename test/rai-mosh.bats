@@ -49,7 +49,7 @@ make_repo() {
   # dir name in the injection test below can't break *our own* test
   # harness's quoting - argv here is passed straight through, no shell
   # re-parsing of $repo.
-  run env -C "$repo" "$REPO_ROOT/rai-mosh"
+  run env -C "$repo" "$LIB_DIR/rai-mosh"
   [ "$status" -eq 0 ]
 
   invocation="$(cat "$STUB_DIR/mosh_invocation")"
@@ -72,7 +72,7 @@ make_repo() {
   malicious_name="foo; touch \$PWN_MARKER; echo done"
   repo=$(make_repo "$malicious_name")
 
-  run env -C "$repo" "$REPO_ROOT/rai-mosh"
+  run env -C "$repo" "$LIB_DIR/rai-mosh"
 
   # The real assertion: shell_quote() held for both $q_remote_path and the
   # new $q_session, so evaluating the captured remote command (see
@@ -85,7 +85,7 @@ make_repo() {
   make_stub mountpoint 'exit 1'
   repo=$(make_repo "myrepo")
 
-  run env -C "$repo" "$REPO_ROOT/rai-mosh"
+  run env -C "$repo" "$LIB_DIR/rai-mosh"
 
   [ "$status" -eq 1 ]
   [[ "$output" == *"Workspace volume is not mounted. Run \`rai unlock\` first."* ]]

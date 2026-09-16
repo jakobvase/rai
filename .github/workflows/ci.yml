@@ -44,18 +44,18 @@ jobs:
       # so it's excluded too.
       - run: |
           shellcheck -s bash \
-            rai \
-            rai-code \
-            rai-common \
-            rai-config \
-            rai-cp \
-            rai-init \
-            rai-mosh \
-            rai-provider-hetzner \
-            rai-provider-selfhosted \
-            rai-pull \
-            rai-push \
-            rai-ssh \
-            rai-start \
-            rai-stop \
-            rai-unlock
+            bin/rai \
+            lib/rai-code \
+            lib/rai-common \
+            lib/rai-config \
+            lib/rai-cp \
+            lib/rai-init \
+            lib/rai-mosh \
+            lib/rai-provider-hetzner \
+            lib/rai-provider-selfhosted \
+            lib/rai-pull \
+            lib/rai-push \
+            lib/rai-ssh \
+            lib/rai-start \
+            lib/rai-stop \
+            lib/rai-unlock

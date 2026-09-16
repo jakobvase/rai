@@ -2,7 +2,7 @@
 
 Scripts to manage working on codebases on a remote vm running ai/llm tools, if you don't trust them to run on your own machine.
 
-To install, download/clone this repo and add `export PATH="$PATH:<path-to-rai>"` to your shell setup (`~/.bashrc` or similar).
+To install, download/clone this repo and add `export PATH="$PATH:<path-to-rai>/bin"` to your shell setup (`~/.bashrc` or similar).
 
 ## Requirements
 

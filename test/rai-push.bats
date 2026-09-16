@@ -70,7 +70,7 @@ init_repo() {
   init_repo "$repo"
   ( cd "$repo" && "$REAL_GIT" checkout -q --detach )
 
-  run env -C "$repo" "$REPO_ROOT/rai-push"
+  run env -C "$repo" "$LIB_DIR/rai-push"
   [ "$status" -eq 1 ]
   [[ "$output" == *"detached HEAD"* ]]
   # Never got as far as trying to push.
@@ -97,7 +97,7 @@ init_repo() {
   # ssh call we're testing, before it gets to `git push`.
   ( cd "$repo" && "$REAL_GIT" checkout -q --detach )
 
-  run env -C "$repo" "$REPO_ROOT/rai-push"
+  run env -C "$repo" "$LIB_DIR/rai-push"
 
   [ ! -e "$pwn_sentinel" ]
   # Delivered as one intact argument: a directory with the exact malicious
@@ -115,7 +115,7 @@ init_repo() {
   malicious_branch='foo'"'"';touch$IFS'"$pwn_sentinel"';echo'"'"
   init_repo "$repo" "$malicious_branch"
 
-  run env -C "$repo" "$REPO_ROOT/rai-push"
+  run env -C "$repo" "$LIB_DIR/rai-push"
 
   [ ! -e "$pwn_sentinel" ]
   # git's own error message echoes back the exact pathspec it received -
@@ -135,7 +135,7 @@ init_repo() {
   # that computing `expected_sha` from a lease ref that doesn't exist yet
   # (guarded by `|| true` in rai-push) doesn't blow up under `set -euo
   # pipefail`, and that `git push` gets invoked with a sensible value.
-  run env -C "$repo" "$REPO_ROOT/rai-push"
+  run env -C "$repo" "$LIB_DIR/rai-push"
 
   [[ "$output" != *"unbound variable"* ]]
   push_invocation="$(cat "$STUB_DIR/git_push_invocation")"
@@ -158,7 +158,7 @@ init_repo() {
   [ "$status" -ne 0 ]
 
   # Same harness caveat as above re: the final checkout call failing.
-  env -C "$repo" "$REPO_ROOT/rai-push" || true
+  env -C "$repo" "$LIB_DIR/rai-push" || true
 
   [ "$("$REAL_GIT" -C "$remote_repo" config --get receive.denyCurrentBranch)" = updateInstead ]
 }
@@ -168,7 +168,7 @@ init_repo() {
   init_repo "$repo" "feature-branch"
 
   # Same harness caveat as above re: the final checkout call failing.
-  run env -C "$repo" "$REPO_ROOT/rai-push"
+  run env -C "$repo" "$LIB_DIR/rai-push"
 
   invocation="$(cat "$STUB_DIR/ssh_invocation")"
   [[ "$invocation" == *"$(basename "$repo")"* ]]
@@ -204,7 +204,7 @@ stub_ssh_checkout_result() {
   init_repo "$repo" "feature-branch"
   stub_ssh_checkout_result 1
 
-  run env -C "$repo" "$REPO_ROOT/rai-push"
+  run env -C "$repo" "$LIB_DIR/rai-push"
 
   [ "$status" -ne 0 ]
   [[ "$output" == *"Remote checkout"* ]]
@@ -217,7 +217,7 @@ stub_ssh_checkout_result() {
   init_repo "$repo" "feature-branch"
   stub_ssh_checkout_result 0
 
-  run env -C "$repo" "$REPO_ROOT/rai-push"
+  run env -C "$repo" "$LIB_DIR/rai-push"
 
   [ "$status" -eq 0 ]
   branch_sha="$("$REAL_GIT" -C "$repo" rev-parse feature-branch)"
@@ -240,7 +240,7 @@ stub_ssh_checkout_result() {
   "$REAL_GIT" -C "$remote_repo" checkout -q -b feature-branch
   "$REAL_GIT" -C "$remote_repo" commit -q --allow-empty -m init
 
-  run env -C "$repo" "$REPO_ROOT/rai-push"
+  run env -C "$repo" "$LIB_DIR/rai-push"
 
   [ "$status" -eq 0 ]
   [[ "$output" != *"Already on"* ]]
@@ -253,7 +253,7 @@ stub_ssh_checkout_result() {
   init_repo "$repo" "feature-branch"
 
   # Same harness caveat as earlier tests re: the final checkout call failing.
-  run env -C "$repo" "$REPO_ROOT/rai-push"
+  run env -C "$repo" "$LIB_DIR/rai-push"
 
   [[ "$output" != *"Warning"* ]]
   [ -e "$STUB_DIR/git_push_invocation" ]
@@ -264,7 +264,7 @@ stub_ssh_checkout_result() {
   init_repo "$repo" "feature-branch"
   echo "scratch" > "$repo/untracked.txt"
 
-  run env -C "$repo" "$REPO_ROOT/rai-push"
+  run env -C "$repo" "$LIB_DIR/rai-push"
 
   [[ "$output" != *"Warning"* ]]
   [ -e "$STUB_DIR/git_push_invocation" ]
@@ -278,7 +278,7 @@ stub_ssh_checkout_result() {
 
   # `run` gives the command no tty, exercising exactly the non-interactive
   # path - if this hung, the test would time out instead of completing.
-  run env -C "$repo" "$REPO_ROOT/rai-push"
+  run env -C "$repo" "$LIB_DIR/rai-push"
 
   [[ "$output" == *"Warning: you have uncommitted changes"* ]]
   [[ "$output" == *"Non-interactive session"* ]]
@@ -291,7 +291,7 @@ stub_ssh_checkout_result() {
   init_repo "$repo" "feature-branch"
   ( cd "$repo" && echo v1 > new.txt && "$REAL_GIT" add new.txt )
 
-  run env -C "$repo" "$REPO_ROOT/rai-push"
+  run env -C "$repo" "$LIB_DIR/rai-push"
 
   [[ "$output" == *"Warning: you have uncommitted changes"* ]]
   [ -e "$STUB_DIR/git_push_invocation" ]

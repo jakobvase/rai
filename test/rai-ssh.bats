@@ -49,7 +49,7 @@ make_repo() {
   # dir name in the injection test below can't break *our own* test
   # harness's quoting - argv here is passed straight through, no shell
   # re-parsing of $repo.
-  run env -C "$repo" "$REPO_ROOT/rai-ssh"
+  run env -C "$repo" "$LIB_DIR/rai-ssh"
   [ "$status" -eq 0 ]
 
   invocation="$(cat "$STUB_DIR/ssh_invocation")"
@@ -67,7 +67,7 @@ make_repo() {
   malicious_name="foo; touch \$PWN_MARKER; echo done"
   repo=$(make_repo "$malicious_name")
 
-  run env -C "$repo" "$REPO_ROOT/rai-ssh"
+  run env -C "$repo" "$LIB_DIR/rai-ssh"
 
   # The real assertion: shell_quote() held, so evaluating the captured
   # remote command (see stub_ssh_eval) never ran the injected `touch`.
@@ -78,7 +78,7 @@ make_repo() {
 @test "rai-ssh: terminal is reset on a clean ssh exit" {
   repo=$(make_repo "myrepo")
 
-  run env -C "$repo" "$REPO_ROOT/rai-ssh"
+  run env -C "$repo" "$LIB_DIR/rai-ssh"
 
   [ "$status" -eq 0 ]
   # The mouse-tracking disable sequences (see rai-ssh's reset_terminal) -
@@ -98,7 +98,7 @@ make_repo() {
     exit 7
   '
 
-  run env -C "$repo" "$REPO_ROOT/rai-ssh"
+  run env -C "$repo" "$LIB_DIR/rai-ssh"
 
   # Not swallowed or coerced to 1 by the trap - ssh's own exit code.
   [ "$status" -eq 7 ]

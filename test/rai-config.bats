@@ -32,7 +32,7 @@ setup() {
   echo "RAI_STATIC_IP=from-repo-config" > "$REPO/.rai/rai.conf"
 
   run env -C "$REPO" HOME="$FAKE_HOME" RAI_STATIC_IP=from-env \
-    bash -c "source '$REPO_ROOT/rai-config'; printf '%s' \"\$RAI_STATIC_IP\""
+    bash -c "source '$LIB_DIR/rai-config'; printf '%s' \"\$RAI_STATIC_IP\""
 
   [ "$status" -eq 0 ]
   [ "$output" = "from-env" ]
@@ -42,7 +42,7 @@ setup() {
   echo "RAI_STATIC_IP=from-home-config" > "$FAKE_HOME/.rai/rai.conf"
 
   run env -C "$REPO" HOME="$FAKE_HOME" RAI_STATIC_IP=from-env \
-    bash -c "source '$REPO_ROOT/rai-config'; printf '%s' \"\$RAI_STATIC_IP\""
+    bash -c "source '$LIB_DIR/rai-config'; printf '%s' \"\$RAI_STATIC_IP\""
 
   [ "$status" -eq 0 ]
   [ "$output" = "from-env" ]
@@ -53,7 +53,7 @@ setup() {
   echo "RAI_STATIC_IP=from-repo-config" > "$REPO/.rai/rai.conf"
 
   run env -C "$REPO" HOME="$FAKE_HOME" RAI_STATIC_IP=from-env \
-    bash -c "source '$REPO_ROOT/rai-config'; printf '%s' \"\$RAI_STATIC_IP\""
+    bash -c "source '$LIB_DIR/rai-config'; printf '%s' \"\$RAI_STATIC_IP\""
 
   [ "$status" -eq 0 ]
   [ "$output" = "from-env" ]
@@ -65,7 +65,7 @@ setup() {
   echo "RAI_STATIC_IP=from-repo-config" > "$REPO/.rai/rai.conf"
 
   run env -C "$REPO" HOME="$FAKE_HOME" \
-    bash -c "unset RAI_STATIC_IP; source '$REPO_ROOT/rai-config'; printf '%s' \"\$RAI_STATIC_IP\""
+    bash -c "unset RAI_STATIC_IP; source '$LIB_DIR/rai-config'; printf '%s' \"\$RAI_STATIC_IP\""
 
   [ "$status" -eq 0 ]
   [ "$output" = "from-repo-config" ]
@@ -81,7 +81,7 @@ setup() {
   echo "RAI_STATIC_IP=x; touch $sentinel" > "$REPO/.rai/rai.conf"
 
   run env -C "$REPO" HOME="$FAKE_HOME" \
-    bash -c "unset RAI_STATIC_IP; source '$REPO_ROOT/rai-config'; printf '%s' \"\$RAI_STATIC_IP\""
+    bash -c "unset RAI_STATIC_IP; source '$LIB_DIR/rai-config'; printf '%s' \"\$RAI_STATIC_IP\""
 
   [ "$status" -eq 0 ]
   [ "$output" = "x; touch $sentinel" ]
@@ -96,7 +96,7 @@ setup() {
   } > "$REPO/.rai/rai.conf"
 
   run env -C "$REPO" HOME="$FAKE_HOME" \
-    bash -c "unset RAI_STATIC_IP RAI_SERVER; source '$REPO_ROOT/rai-config'; printf '%s|%s' \"\$RAI_STATIC_IP\" \"\$RAI_SERVER\""
+    bash -c "unset RAI_STATIC_IP RAI_SERVER; source '$LIB_DIR/rai-config'; printf '%s|%s' \"\$RAI_STATIC_IP\" \"\$RAI_SERVER\""
 
   [ "$status" -eq 0 ]
   [ "$output" = "\$(touch $sentinel)|\`touch $sentinel\`" ]
@@ -109,7 +109,7 @@ setup() {
   # rai-config warns about the unrecognized key on stderr, which `run`
   # would otherwise merge into $output, so discard it here.
   run env -C "$REPO" HOME="$FAKE_HOME" \
-    bash -c "source '$REPO_ROOT/rai-config' 2>/dev/null; printf '%s' \"\${EVIL_VAR:-unset}\""
+    bash -c "source '$LIB_DIR/rai-config' 2>/dev/null; printf '%s' \"\${EVIL_VAR:-unset}\""
 
   [ "$status" -eq 0 ]
   [ "$output" = "unset" ]
@@ -119,7 +119,7 @@ setup() {
   echo 'RAI_STATIC_IP="quoted value"' > "$REPO/.rai/rai.conf"
 
   run env -C "$REPO" HOME="$FAKE_HOME" \
-    bash -c "unset RAI_STATIC_IP; source '$REPO_ROOT/rai-config'; printf '%s' \"\$RAI_STATIC_IP\""
+    bash -c "unset RAI_STATIC_IP; source '$LIB_DIR/rai-config'; printf '%s' \"\$RAI_STATIC_IP\""
 
   [ "$status" -eq 0 ]
   [ "$output" = "quoted value" ]
@@ -129,7 +129,7 @@ setup() {
   echo "RAI_STATIC_IP='quoted value'" > "$REPO/.rai/rai.conf"
 
   run env -C "$REPO" HOME="$FAKE_HOME" \
-    bash -c "unset RAI_STATIC_IP; source '$REPO_ROOT/rai-config'; printf '%s' \"\$RAI_STATIC_IP\""
+    bash -c "unset RAI_STATIC_IP; source '$LIB_DIR/rai-config'; printf '%s' \"\$RAI_STATIC_IP\""
 
   [ "$status" -eq 0 ]
   [ "$output" = "quoted value" ]
@@ -144,7 +144,7 @@ setup() {
   # rai-config warns about the malformed line on stderr, which `run` would
   # otherwise merge into $output, so discard it here.
   run env -C "$REPO" HOME="$FAKE_HOME" \
-    bash -c "set -euo pipefail; unset RAI_STATIC_IP; source '$REPO_ROOT/rai-config' 2>/dev/null; printf '%s' \"\$RAI_STATIC_IP\""
+    bash -c "set -euo pipefail; unset RAI_STATIC_IP; source '$LIB_DIR/rai-config' 2>/dev/null; printf '%s' \"\$RAI_STATIC_IP\""
 
   [ "$status" -eq 0 ]
   [ "$output" = "from-repo-config" ]
@@ -161,7 +161,7 @@ setup() {
   local stderr_file="$BATS_TEST_TMPDIR/stderr"
 
   run env -C "$REPO" HOME="$FAKE_HOME" \
-    bash -c "unset RAI_STATIC_IP; source '$REPO_ROOT/rai-config' 2>'$stderr_file'; printf '%s' \"\${RAI_STATIC_IP:-unset}\""
+    bash -c "unset RAI_STATIC_IP; source '$LIB_DIR/rai-config' 2>'$stderr_file'; printf '%s' \"\${RAI_STATIC_IP:-unset}\""
 
   [ "$status" -eq 0 ]
   [ "$output" = "unset" ]
@@ -173,7 +173,7 @@ setup() {
   local stderr_file="$BATS_TEST_TMPDIR/stderr"
 
   run env -C "$REPO" HOME="$FAKE_HOME" \
-    bash -c "unset RAI_SERVER; source '$REPO_ROOT/rai-config' 2>'$stderr_file'; printf '%s' \"\$RAI_SERVER\""
+    bash -c "unset RAI_SERVER; source '$LIB_DIR/rai-config' 2>'$stderr_file'; printf '%s' \"\$RAI_SERVER\""
 
   [ "$status" -eq 0 ]
   # Falls back to the hardcoded default since the malicious value was rejected.
@@ -186,7 +186,7 @@ setup() {
   local stderr_file="$BATS_TEST_TMPDIR/stderr"
 
   run env -C "$REPO" HOME="$FAKE_HOME" \
-    bash -c "unset RAI_PROVIDER; source '$REPO_ROOT/rai-config' 2>'$stderr_file'"
+    bash -c "unset RAI_PROVIDER; source '$LIB_DIR/rai-config' 2>'$stderr_file'"
 
   [ "$status" -ne 0 ]
   grep -q "error: unknown RAI_PROVIDER 'evilprovider'" "$stderr_file"
@@ -194,7 +194,7 @@ setup() {
 
 @test "rai-config: RAI_PROVIDER=hetzner is accepted" {
   run env -C "$REPO" HOME="$FAKE_HOME" RAI_PROVIDER=hetzner \
-    bash -c "source '$REPO_ROOT/rai-config'; printf '%s' \"\$RAI_PROVIDER\""
+    bash -c "source '$LIB_DIR/rai-config'; printf '%s' \"\$RAI_PROVIDER\""
 
   [ "$status" -eq 0 ]
   [ "$output" = "hetzner" ]
@@ -202,7 +202,7 @@ setup() {
 
 @test "rai-config: RAI_PROVIDER=selfhosted is accepted" {
   run env -C "$REPO" HOME="$FAKE_HOME" RAI_PROVIDER=selfhosted \
-    bash -c "source '$REPO_ROOT/rai-config'; printf '%s' \"\$RAI_PROVIDER\""
+    bash -c "source '$LIB_DIR/rai-config'; printf '%s' \"\$RAI_PROVIDER\""
 
   [ "$status" -eq 0 ]
   [ "$output" = "selfhosted" ]

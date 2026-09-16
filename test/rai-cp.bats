@@ -19,21 +19,21 @@ teardown() {
 }
 
 @test "rai-cp with zero args prints usage instead of failing on unbound \$1/\$2" {
-  run "$REPO_ROOT/rai-cp"
+  run "$LIB_DIR/rai-cp"
   [ "$status" -eq 1 ]
   [[ "$output" == *"Usage: rai cp"* ]]
   [[ "$output" != *"unbound variable"* ]]
 }
 
 @test "rai-cp with one arg prints usage instead of failing on unbound \$2" {
-  run "$REPO_ROOT/rai-cp" only-one-arg
+  run "$LIB_DIR/rai-cp" only-one-arg
   [ "$status" -eq 1 ]
   [[ "$output" == *"Usage: rai cp"* ]]
   [[ "$output" != *"unbound variable"* ]]
 }
 
 @test "rai-cp --raw with two args scp's straight to the given remote path" {
-  run "$REPO_ROOT/rai-cp" --raw localfile /remote/dest/path
+  run "$LIB_DIR/rai-cp" --raw localfile /remote/dest/path
   [ "$status" -eq 0 ]
   invocation="$(cat "$STUB_DIR/scp_invocation")"
   [[ "$invocation" == *"localfile"* ]]
@@ -41,7 +41,7 @@ teardown() {
 }
 
 @test "rai-cp passes a -- separator before the positional args, so a dash-prefixed local path can't be parsed as an scp flag" {
-  run "$REPO_ROOT/rai-cp" --raw localfile /remote/dest/path
+  run "$LIB_DIR/rai-cp" --raw localfile /remote/dest/path
   [ "$status" -eq 0 ]
   mapfile -t lines < "$STUB_DIR/scp_invocation"
   [ "${lines[0]}" = "--" ]
@@ -50,7 +50,7 @@ teardown() {
 }
 
 @test "rai-cp without --raw, outside a git repo, fails with a clear error" {
-  run env -C "$BATS_TEST_TMPDIR" "$REPO_ROOT/rai-cp" localfile dest/path
+  run env -C "$BATS_TEST_TMPDIR" "$LIB_DIR/rai-cp" localfile dest/path
   [ "$status" -eq 1 ]
   [[ "$output" == *"not inside a git repository"* ]]
 }
@@ -60,7 +60,7 @@ teardown() {
   mkdir -p "$repo"
   ( cd "$repo" && git init -q )
 
-  run env -C "$repo" "$REPO_ROOT/rai-cp" localfile dest/path
+  run env -C "$repo" "$LIB_DIR/rai-cp" localfile dest/path
   [ "$status" -eq 0 ]
   invocation="$(cat "$STUB_DIR/scp_invocation")"
   [[ "$invocation" == *"myrepo/dest/path"* ]]

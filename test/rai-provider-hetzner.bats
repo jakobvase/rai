@@ -27,7 +27,7 @@ teardown() {
 
 @test "provider_ip returns the ip on success" {
   make_stub hcloud 'echo "{\"public_net\":{\"ipv4\":{\"ip\":\"1.2.3.4\"}}}"'
-  source "$REPO_ROOT/rai-provider-hetzner"
+  source "$LIB_DIR/rai-provider-hetzner"
   run provider_ip
   [ "$status" -eq 0 ]
   [ "$output" = "1.2.3.4" ]
@@ -35,7 +35,7 @@ teardown() {
 
 @test "provider_ip fails clearly instead of emitting null/empty when hcloud fails" {
   make_stub hcloud 'exit 1'
-  source "$REPO_ROOT/rai-provider-hetzner"
+  source "$LIB_DIR/rai-provider-hetzner"
   run provider_ip
   [ "$status" -eq 1 ]
   [[ "$output" == *"hcloud failed"* ]]
@@ -44,7 +44,7 @@ teardown() {
 
 @test "provider_status returns the status on success" {
   make_stub hcloud 'echo "{\"status\":\"running\"}"'
-  source "$REPO_ROOT/rai-provider-hetzner"
+  source "$LIB_DIR/rai-provider-hetzner"
   run provider_status
   [ "$status" -eq 0 ]
   [ "$output" = "running" ]
@@ -52,7 +52,7 @@ teardown() {
 
 @test "provider_status fails clearly instead of emitting null/empty when hcloud fails" {
   make_stub hcloud 'exit 1'
-  source "$REPO_ROOT/rai-provider-hetzner"
+  source "$LIB_DIR/rai-provider-hetzner"
   run provider_status
   [ "$status" -eq 1 ]
   [[ "$output" == *"hcloud failed"* ]]
@@ -60,7 +60,7 @@ teardown() {
 
 @test "provider_start returns immediately when already running" {
   make_stub hcloud 'echo "{\"status\":\"running\"}"'
-  source "$REPO_ROOT/rai-provider-hetzner"
+  source "$LIB_DIR/rai-provider-hetzner"
   run provider_start
   [ "$status" -eq 0 ]
   [[ "$output" == *"Already running"* ]]
@@ -86,7 +86,7 @@ STUB
     export STUB_COUNTER_FILE='$STUB_DIR/counter'
     export RAI_SERVER='$RAI_SERVER'
     sleep() { :; }
-    source '$REPO_ROOT/rai-provider-hetzner'
+    source '$LIB_DIR/rai-provider-hetzner'
     provider_start
   "
   [ "$status" -eq 0 ]
@@ -117,7 +117,7 @@ STUB
     export STUB_COUNTER_FILE='$STUB_DIR/counter'
     export RAI_SERVER='$RAI_SERVER'
     sleep() { :; }
-    source '$REPO_ROOT/rai-provider-hetzner'
+    source '$LIB_DIR/rai-provider-hetzner'
     provider_start
   "
   [ "$status" -eq 1 ]
@@ -127,7 +127,7 @@ STUB
 
 @test "provider_stop fails clearly when hcloud fails" {
   make_stub hcloud 'exit 1'
-  source "$REPO_ROOT/rai-provider-hetzner"
+  source "$LIB_DIR/rai-provider-hetzner"
   run provider_stop
   [ "$status" -eq 1 ]
   [[ "$output" == *"hcloud failed"* ]]

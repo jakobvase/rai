@@ -23,7 +23,7 @@ setup() {
   NOTREPO="$BATS_TEST_TMPDIR/notrepo"
   mkdir -p "$NOTREPO"
 
-  run env -C "$NOTREPO" HOME="$FAKE_HOME" "$REPO_ROOT/rai-init" --yes
+  run env -C "$NOTREPO" HOME="$FAKE_HOME" "$LIB_DIR/rai-init" --yes
 
   [ "$status" -ne 0 ]
   [[ "$output" == *"not inside a git repository"* ]]
@@ -31,7 +31,7 @@ setup() {
 }
 
 @test "rai-init: --yes with default resolved config writes RAI_PROVIDER and RAI_SERVER" {
-  run env -C "$REPO" HOME="$FAKE_HOME" "$REPO_ROOT/rai-init" --yes
+  run env -C "$REPO" HOME="$FAKE_HOME" "$LIB_DIR/rai-init" --yes
 
   [ "$status" -eq 0 ]
   [ -f "$REPO/.rai/rai.conf" ]
@@ -41,7 +41,7 @@ setup() {
 }
 
 @test "rai-init: --yes with selfhosted and no RAI_STATIC_IP fails, writes nothing" {
-  run env -C "$REPO" HOME="$FAKE_HOME" RAI_PROVIDER=selfhosted "$REPO_ROOT/rai-init" --yes
+  run env -C "$REPO" HOME="$FAKE_HOME" RAI_PROVIDER=selfhosted "$LIB_DIR/rai-init" --yes
 
   [ "$status" -ne 0 ]
   [[ "$output" == *"RAI_STATIC_IP"* ]]
@@ -50,7 +50,7 @@ setup() {
 
 @test "rai-init: --yes with selfhosted and RAI_STATIC_IP writes both values" {
   run env -C "$REPO" HOME="$FAKE_HOME" RAI_PROVIDER=selfhosted RAI_STATIC_IP=9.8.7.6 \
-    "$REPO_ROOT/rai-init" --yes
+    "$LIB_DIR/rai-init" --yes
 
   [ "$status" -eq 0 ]
   grep -q '^RAI_PROVIDER=selfhosted$' "$REPO/.rai/rai.conf"
@@ -59,7 +59,7 @@ setup() {
 }
 
 @test "rai-init: interactive, choosing selfhosted and typing an IP writes both values" {
-  run bash -c "printf '2\n1.2.3.4\n' | env -C '$REPO' HOME='$FAKE_HOME' '$REPO_ROOT/rai-init'"
+  run bash -c "printf '2\n1.2.3.4\n' | env -C '$REPO' HOME='$FAKE_HOME' '$LIB_DIR/rai-init'"
 
   [ "$status" -eq 0 ]
   grep -q '^RAI_PROVIDER=selfhosted$' "$REPO/.rai/rai.conf"
@@ -67,7 +67,7 @@ setup() {
 }
 
 @test "rai-init: interactive, pressing Enter at each prompt accepts the resolved defaults" {
-  run bash -c "printf '\n\n' | env -C '$REPO' HOME='$FAKE_HOME' '$REPO_ROOT/rai-init'"
+  run bash -c "printf '\n\n' | env -C '$REPO' HOME='$FAKE_HOME' '$LIB_DIR/rai-init'"
 
   [ "$status" -eq 0 ]
   grep -q '^RAI_PROVIDER=hetzner$' "$REPO/.rai/rai.conf"
@@ -78,7 +78,7 @@ setup() {
   mkdir -p "$REPO/.rai"
   echo "RAI_SERVER=precious" > "$REPO/.rai/rai.conf"
 
-  run bash -c "printf '\n' | env -C '$REPO' HOME='$FAKE_HOME' '$REPO_ROOT/rai-init'"
+  run bash -c "printf '\n' | env -C '$REPO' HOME='$FAKE_HOME' '$LIB_DIR/rai-init'"
 
   [ "$status" -ne 0 ]
   [ "$(cat "$REPO/.rai/rai.conf")" = "RAI_SERVER=precious" ]
@@ -88,7 +88,7 @@ setup() {
   mkdir -p "$REPO/.rai"
   echo "RAI_SERVER=precious" > "$REPO/.rai/rai.conf"
 
-  run env -C "$REPO" HOME="$FAKE_HOME" "$REPO_ROOT/rai-init" --yes
+  run env -C "$REPO" HOME="$FAKE_HOME" "$LIB_DIR/rai-init" --yes
 
   [ "$status" -ne 0 ]
   [[ "$output" == *"already exists"* ]]
@@ -99,7 +99,7 @@ setup() {
   mkdir -p "$REPO/.rai"
   echo "RAI_SERVER=precious" > "$REPO/.rai/rai.conf"
 
-  run bash -c "printf 'y\n1\nnewname\n' | env -C '$REPO' HOME='$FAKE_HOME' '$REPO_ROOT/rai-init'"
+  run bash -c "printf 'y\n1\nnewname\n' | env -C '$REPO' HOME='$FAKE_HOME' '$LIB_DIR/rai-init'"
 
   [ "$status" -eq 0 ]
   grep -q '^RAI_SERVER=newname$' "$REPO/.rai/rai.conf"
@@ -107,11 +107,11 @@ setup() {
 
 @test "rai-init: round-trip - the generated file is valid input to rai-config" {
   run env -C "$REPO" HOME="$FAKE_HOME" RAI_PROVIDER=selfhosted RAI_STATIC_IP=5.5.5.5 \
-    "$REPO_ROOT/rai-init" --yes
+    "$LIB_DIR/rai-init" --yes
   [ "$status" -eq 0 ]
 
   run env -C "$REPO" HOME="$FAKE_HOME" \
-    bash -c "unset RAI_PROVIDER RAI_STATIC_IP; source '$REPO_ROOT/rai-config'; printf '%s|%s' \"\$RAI_PROVIDER\" \"\$RAI_STATIC_IP\""
+    bash -c "unset RAI_PROVIDER RAI_STATIC_IP; source '$LIB_DIR/rai-config'; printf '%s|%s' \"\$RAI_PROVIDER\" \"\$RAI_STATIC_IP\""
 
   [ "$status" -eq 0 ]
   [ "$output" = "selfhosted|5.5.5.5" ]

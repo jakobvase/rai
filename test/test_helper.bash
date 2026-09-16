@@ -2,6 +2,8 @@
 # Loaded via `load test_helper` at the top of each .bats file.
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+BIN_DIR="$REPO_ROOT/bin"
+LIB_DIR="$REPO_ROOT/lib"
 
 # setup_stub_dir - create an empty dir and put it first on PATH, so tests can
 # drop fake `hcloud`/`jq`/`ssh`/etc. binaries there to intercept calls the

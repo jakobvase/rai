@@ -3,6 +3,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
+LIB_DIR="$(realpath "$SCRIPT_DIR/../lib")"
 
 # Keep in sync with the case pattern below.
 COMMANDS=(init start stop push pull cp ssh mosh code unlock)
@@ -35,7 +36,7 @@ fallback_description() {
 # doesn't match the expected "# rai CMD - ..." shape.
 description_for() {
   local cmd="$1"
-  local file="$SCRIPT_DIR/rai-$cmd" line prefix
+  local file="$LIB_DIR/rai-$cmd" line prefix
   if [ -f "$file" ]; then
     line="$(sed -n '2p' "$file")"
     prefix="# rai $cmd - "
@@ -71,7 +72,7 @@ case "$COMMAND" in
     ;;
   init|start|stop|push|pull|cp|ssh|mosh|code|unlock)
     shift
-    "$SCRIPT_DIR/rai-$COMMAND" "$@"
+    "$LIB_DIR/rai-$COMMAND" "$@"
     ;;
   *)
     print_help >&2

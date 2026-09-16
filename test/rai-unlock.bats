@@ -37,7 +37,7 @@ teardown() {
 @test "rai-unlock: normal RAI_REMOTE_BASE produces a working mount command" {
   export RAI_REMOTE_BASE="/mnt/workspaces"
 
-  run "$REPO_ROOT/rai-unlock"
+  run "$LIB_DIR/rai-unlock"
   [ "$status" -eq 0 ]
 
   invocation="$(cat "$STUB_DIR/mount_invocation")"
@@ -47,7 +47,7 @@ teardown() {
 @test "rai-unlock: successful unlock (not already mounted) prints a clear confirmation naming the mount point" {
   export RAI_REMOTE_BASE="/mnt/workspaces"
 
-  run "$REPO_ROOT/rai-unlock"
+  run "$LIB_DIR/rai-unlock"
   [ "$status" -eq 0 ]
 
   [[ "$output" == *"Unlocked and mounted /mnt/workspaces."* ]]
@@ -62,7 +62,7 @@ teardown() {
   # regardless of how many times the value appears.
   export RAI_REMOTE_BASE="/mnt/workspaces; touch $pwn_sentinel; echo done"
 
-  run "$REPO_ROOT/rai-unlock"
+  run "$LIB_DIR/rai-unlock"
 
   # The real assertion: shell_quote() held, so evaluating the captured
   # remote command (see stub_ssh_eval) never ran the injected `touch`.
