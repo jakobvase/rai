@@ -83,6 +83,11 @@ Requirements, not automated by any script here:
 
 - `mosh` installed locally.
 - `mosh-server` and `tmux` installed on the VM.
+- utf-8 on installed on the server. I had to run:
+  ```bash
+  sudo locale-gen en_US.UTF-8
+  sudo update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
+  ```
 - A firewall in front of the VM (if any) allowing the UDP port(s) mosh
   needs: by default that's mosh's whole 60000-61000 range, since it picks a
   port from there at connection time; set `RAI_MOSH_PORT` to pin it to one
