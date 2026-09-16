@@ -32,8 +32,13 @@ They can be set, in increasing order of precedence:
 - In `<repo-root>/.rai/config` - repo defaults, meant to be committed and shared with the team.
 - As already-exported environment variables (`RAI_SERVER=foo rai start`), which always win.
 
-Both files are plain `KEY=value` shell files that get sourced directly, so
-they can run arbitrary shell - only use `.rai/config` files you trust.
+Both files are plain `KEY=value` text files, one assignment per line, and
+are parsed (not sourced) - only lines assigning one of the variables above
+are applied, a value can optionally be wrapped in matching single or double
+quotes, and everything else (blank lines, `#` comments, unrecognized keys,
+malformed lines) is ignored with a warning. There's no `$(...)`, backtick,
+or variable-expansion support, so a `.rai/config` file can't run arbitrary
+shell - safe to commit and share with the team.
 
 ## Encrypted volumes
 
