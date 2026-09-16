@@ -224,3 +224,26 @@ stub_ssh_checkout_result() {
   lease_sha="$("$REAL_GIT" -C "$repo" rev-parse refs/rai-remote/feature-branch)"
   [ "$branch_sha" = "$lease_sha" ]
 }
+
+@test "rai-push: remote checkout is quiet and succeeds when already on the target branch" {
+  repo="$BATS_TEST_TMPDIR/repo"
+  init_repo "$repo" "feature-branch"
+
+  # Pre-create the "remote" repo already checked out on feature-branch -
+  # the common case rai-push hits on every push once the VM is in sync,
+  # which used to print git's own "Already on 'feature-branch'" noise.
+  remote_repo="$RAI_REMOTE_BASE/$(basename "$repo")"
+  mkdir -p "$remote_repo"
+  "$REAL_GIT" init -q "$remote_repo"
+  "$REAL_GIT" -C "$remote_repo" config user.email test@example.com
+  "$REAL_GIT" -C "$remote_repo" config user.name test
+  "$REAL_GIT" -C "$remote_repo" checkout -q -b feature-branch
+  "$REAL_GIT" -C "$remote_repo" commit -q --allow-empty -m init
+
+  run env -C "$repo" "$REPO_ROOT/rai-push"
+
+  [ "$status" -eq 0 ]
+  [[ "$output" != *"Already on"* ]]
+  invocation="$(cat "$STUB_DIR/ssh_invocation")"
+  [[ "$invocation" == *"checkout -q"* ]]
+}

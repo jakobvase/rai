@@ -50,7 +50,12 @@ else
 fi
 
 q_branch=$(shell_quote "$branch")
-if ! ssh "$RAI_USER@$ip" "git -C $q_remote_path checkout $q_branch"; then
+# -q: the remote is already on this branch on every push but the first, and
+# a plain checkout prints "Already on '<branch>'" to stderr in that case -
+# harmless but noisy on every single push. -q only silences that feedback
+# message; real errors (bad ref, conflicting local changes) and the exit
+# code still come through untouched.
+if ! ssh "$RAI_USER@$ip" "git -C $q_remote_path checkout -q $q_branch"; then
   echo "Remote checkout of '$branch' failed after push; remote may be out of sync. Not recording lease." >&2
   exit 1
 fi
