@@ -12,6 +12,30 @@ remote_path=$(remote_repo_path) || exit 1
 q_remote_base=$(shell_quote "$RAI_REMOTE_BASE")
 q_remote_path=$(shell_quote "$remote_path")
 
+# An abrupt drop (wifi blip, laptop sleep) kills the ssh session before
+# whatever was running remotely (vim, tmux, an agent TUI, ...) gets a
+# chance to turn off the terminal modes it turned on - most annoyingly
+# xterm mouse reporting, which then makes every later mouse move show up
+# as garbage keystrokes in the local terminal. A clean exit doesn't need
+# this (the remote program already restored its own modes on the way
+# out), but there's no reliable way to tell "clean" from "abrupt" from out
+# here, so just always reset on the way out instead of guessing. `stty
+# sane` fixes the tty line discipline (echo/icanon/etc); the `\e[?...l`
+# sequences separately turn off mouse reporting, which is local-terminal-
+# emulator state that stty can't touch (deliberately not a blunt `reset`/
+# `tput reset`: those also clear the screen/scrollback, which is a lot of
+# collateral damage for what's really just a stuck input mode). A `trap
+# ... EXIT` (not just appended after the ssh line) so it fires on every
+# exit path - including the nonzero one from an abrupt drop, which is
+# exactly the case this is for - not only a clean 0 return. A trap's own
+# exit status never overrides the script's, so ssh's real exit code still
+# propagates to our caller untouched.
+reset_terminal() {
+  stty sane 2>/dev/null || true
+  printf '\e[?1000l\e[?1002l\e[?1003l\e[?1006l\e[?1015l' 2>/dev/null || true
+}
+trap reset_terminal EXIT
+
 ssh -t "$RAI_USER@$ip" "
   if ! mountpoint -q $q_remote_base; then
     echo 'Workspace volume is not mounted. Run \`rai unlock\` first.' >&2

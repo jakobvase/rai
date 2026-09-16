@@ -74,3 +74,34 @@ make_repo() {
   [ ! -e "$pwn_sentinel" ]
   [ "$status" -eq 0 ]
 }
+
+@test "rai-ssh: terminal is reset on a clean ssh exit" {
+  repo=$(make_repo "myrepo")
+
+  run env -C "$repo" "$REPO_ROOT/rai-ssh"
+
+  [ "$status" -eq 0 ]
+  # The mouse-tracking disable sequences (see rai-ssh's reset_terminal) -
+  # proof the EXIT trap actually ran, not just that the script exited 0.
+  [[ "$output" == *$'\e[?1000l'* ]]
+  [[ "$output" == *$'\e[?1006l'* ]]
+}
+
+@test "rai-ssh: terminal is still reset when ssh exits nonzero, and that exit code still propagates" {
+  repo=$(make_repo "myrepo")
+  # Simulates an abrupt drop: ssh itself exits nonzero (as it would on a
+  # killed connection) instead of running the remote command at all - the
+  # exact case reset_terminal exists for, since a clean exit wouldn't have
+  # left any mode stuck in the first place.
+  make_stub ssh '
+    { printf "%s\n" "$@"; echo "---"; } >> "$STUB_DIR/ssh_invocation"
+    exit 7
+  '
+
+  run env -C "$repo" "$REPO_ROOT/rai-ssh"
+
+  # Not swallowed or coerced to 1 by the trap - ssh's own exit code.
+  [ "$status" -eq 7 ]
+  [[ "$output" == *$'\e[?1000l'* ]]
+  [[ "$output" == *$'\e[?1006l'* ]]
+}
