@@ -29,7 +29,7 @@ All `rai-*` scripts source `rai-config`, which loads these variables, all option
 They can be set, in increasing order of precedence:
 
 - In `~/.rai/config` - personal/per-machine overrides; don't commit this one, and use it for anything you don't want in the repo (e.g. secrets).
-- In `<repo-root>/.rai/config` - repo defaults, meant to be committed and shared with the team.
+- In `<repo-root>/.rai/config` - repo defaults. Can be committed and shared with a team, but mainly for being able to override values on a repo-by-repo basis (in case you want some repo running somewhere else for some reason).
 - As already-exported environment variables (`RAI_SERVER=foo rai start`), which always win.
 
 Both files are plain `KEY=value` text files, one assignment per line, and
