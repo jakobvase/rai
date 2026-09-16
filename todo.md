@@ -23,7 +23,8 @@ Viewed through the lens of: what's needed before open-sourcing this.
 ## Open-source readiness (new)
 
 - [] Add a LICENSE file. Blocker: without one, nobody knows what they're legally permitted to do with the code. Pick MIT or Apache-2.0 (common defaults for a tool like this).
-- [] Add a more visible "Security" callout to readme.md: `.rai/config` files (both `~/.rai/config` and `<repo>/.rai/config`) are sourced as plain shell and can run arbitrary code. Already mentioned once in the Configuration section, but strangers reading this on GitHub won't necessarily read as carefully as you did - worth its own heading.
+- [x] `.rai/config` arbitrary shell execution.
+  - Fixed: `rai-config` no longer `source`s `.rai/config` files. It now parses them with a strict line-by-line `KEY=value` parser - only known `RAI_*` keys are applied, values may be quoted but are never evaluated (`$(...)`/backticks/expansion are inert literal text), and unrecognized/malformed lines are skipped with a warning instead of aborting. Closes the risk of a committed `<repo-root>/.rai/config` (or a malicious PR touching it) running arbitrary code on anyone who runs a `rai-*` command in that checkout. readme's Configuration section updated to match (files are now safe to commit and share, not "only use files you trust").
 - [] Consider a CONTRIBUTING.md - optional for a small personal-tool release, can add later if/when the project gets external contributors.
 
 Checked already, no action needed: scanned full git history for leaked tokens/secrets/credentials - clean. No git remote configured yet either.
