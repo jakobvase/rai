@@ -5,7 +5,7 @@ set -euo pipefail
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 
 # Keep in sync with the case pattern below.
-COMMANDS=(start stop push pull cp ssh mosh code unlock)
+COMMANDS=(init start stop push pull cp ssh mosh code unlock)
 
 # fallback_description CMD - Hardcoded one-line description for CMD, used
 # only if description_for can't extract one from the rai-CMD file itself
@@ -13,6 +13,7 @@ COMMANDS=(start stop push pull cp ssh mosh code unlock)
 # command from the help output).
 fallback_description() {
   case "$1" in
+    init) echo "Interactively scaffold <repo-root>/.rai/rai.conf" ;;
     start) echo "Start the RAI VM if not running" ;;
     stop) echo "Shut down the RAI VM" ;;
     push) echo "Push current git repo to RAI VM" ;;
@@ -68,7 +69,7 @@ case "$COMMAND" in
     print_help
     exit 0
     ;;
-  start|stop|push|pull|cp|ssh|mosh|code|unlock)
+  init|start|stop|push|pull|cp|ssh|mosh|code|unlock)
     shift
     "$SCRIPT_DIR/rai-$COMMAND" "$@"
     ;;

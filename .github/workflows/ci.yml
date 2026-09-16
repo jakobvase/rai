@@ -49,6 +49,7 @@ jobs:
             rai-common \
             rai-config \
             rai-cp \
+            rai-init \
             rai-mosh \
             rai-provider-hetzner \
             rai-provider-selfhosted \
