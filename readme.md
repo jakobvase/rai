@@ -15,6 +15,8 @@ VM management goes through a provider, set via `RAI_PROVIDER` (default: `hetzner
 
 For `rai code` to work, you must install VS Code's `code` cli. Open the Command Palette (Cmd+Shift+P), search for "Shell Command: Install 'code' command in PATH", and run it.
 
+For `rai mosh` to work, you must install `mosh` locally, and the VM needs `mosh-server` and `tmux` installed - there's no provisioning script for this today, so it's a manual, one-time step on the VM (see "mosh" below).
+
 ## Configuration
 
 All `rai-*` scripts source `rai-config`, which loads these variables, all optional:
@@ -25,6 +27,7 @@ All `rai-*` scripts source `rai-config`, which loads these variables, all option
 - RAI_VOLUME - volume to mount the workspaces to and from, useful if they should be encrypted (default: /dev/sdb)
 - RAI_PROVIDER - which provider to use to find/start/stop the VM: `hetzner` or `selfhosted` (default: hetzner)
 - RAI_STATIC_IP - IP or hostname of the machine, only used when RAI_PROVIDER=selfhosted
+- RAI_MOSH_PORT - UDP port for `rai mosh` to pin `mosh-server` to, instead of letting it pick from its default 60000-61000 range (default: unset, i.e. mosh's own default range)
 
 They can be set, in increasing order of precedence:
 
@@ -61,6 +64,32 @@ rai ALL=(root) NOPASSWD: /usr/bin/mount /dev/mapper/data /home/rai/workspaces
 - The rule is scoped to that one user and those two exact commands - `rai`
   gets no other passwordless sudo access.
 
+## mosh
+
+`rai mosh` is an alternative to `rai ssh` for connecting to the VM over
+[mosh](https://mosh.org/) instead of plain SSH. It attaches to (or creates) a
+tmux session scoped to the current repo, so closing the laptop lid, changing
+networks, and running `rai mosh` again drops you back into the same shell,
+with whatever was running still running. This is different from `rai ssh`,
+which always starts a fresh shell in the repo's remote directory - `rai mosh`
+only `cd`s there when the session is first created; reattaching to an
+existing session keeps whatever directory it's already sitting in.
+
+Two different repos checked out against the same VM get two independent
+sessions (named `rai-<repo dir name>`), so they don't collide with each
+other.
+
+Requirements, not automated by any script here:
+
+- `mosh` installed locally.
+- `mosh-server` and `tmux` installed on the VM.
+- A firewall in front of the VM (if any) allowing the UDP port(s) mosh
+  needs: by default that's mosh's whole 60000-61000 range, since it picks a
+  port from there at connection time; set `RAI_MOSH_PORT` to pin it to one
+  specific port instead, so only that single port needs to be open. This
+  repo does no firewall automation for either provider, so opening the
+  port(s) is on you.
+
 ## Tests
 
-`bats test/` runs the test suite (requires [bats-core](https://github.com/bats-core/bats-core), tested against 1.13; `jq` is stubbed, not required). Tests run end-to-end against the real scripts with `ssh`/`scp`/`hcloud`/`jq` stubbed - see `test/test_helper.bash` for the stubbing helpers.
+`bats test/` runs the test suite (requires [bats-core](https://github.com/bats-core/bats-core), tested against 1.13; `jq` is stubbed, not required). Tests run end-to-end against the real scripts with `ssh`/`mosh`/`scp`/`hcloud`/`jq` stubbed - see `test/test_helper.bash` for the stubbing helpers.
