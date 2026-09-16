@@ -5,7 +5,6 @@ Viewed through the lens of: what's needed before open-sourcing this.
 - [] User friendlyness
   - [] anything else here? Better messages for what's happening? I think letting the subcommands' output bleed through is generally a good idea, but maybe there should be some `-q` flags to suppress most of it?
 - [] Handling abrupt stops in connection well - specifically `rai-ssh`.
-  - [x] Garbage-input-after-drop bug: fixed. An abrupt drop skipped whatever remote program (vim/tmux/agent TUI) was running its own cleanup, leaving xterm mouse-reporting modes stuck on locally, so mouse movement showed up as keystrokes. `rai-ssh` now resets terminal state (`stty sane` + disables all common mouse-tracking escape sequences) in a `trap ... EXIT`, so it always runs regardless of how the session ended, without swallowing ssh's real exit code.
   - [] Bigger gap: "close the laptop lid on the train, walk to work, resume exactly where I was" - a full roaming/reconnect scenario, not just a blip. Standard answer is **mosh + tmux** (mosh rides UDP and survives IP changes/sleep instead of ssh's single TCP connection; tmux keeps whatever's running alive server-side so you reattach instead of getting a fresh shell). Design sketched, not built:
     - `rai-ssh` would become `mosh $RAI_USER@$ip -- tmux new-session -A -s rai` (attach-or-create) when enabled; the "is the volume mounted" check would need to move to an ssh preflight or into the tmux session's startup command, since mosh has no "run a check first" hook. `rai-code` is out of scope - it goes through VS Code Remote-SSH, which owns that connection and already has its own reconnect handling.
     - New dependency: `mosh` on both the laptop and the VM, `tmux` on the VM only. There's no VM-provisioning script in this repo today (`rai-provider-hetzner` only does `hcloud server describe/poweron/shutdown`, no `create`), so this lands as a readme/docs requirement, not a code change to the provider.
@@ -17,9 +16,8 @@ Viewed through the lens of: what's needed before open-sourcing this.
   - Tradeoff: delete+recreate saves more (Hetzner still bills for a stopped server's attached volume/reserved resources), but loses the server itself (new IP, volume reattachment, reprovisioning) - bigger blast radius, and provider-specific (meaningless for `selfhosted`, which has nothing to create/delete).
 - [] Consider user installation. Would be good if this could be easily published to brew/apt/other package repos, what's required for that?
   - Not a blocker for open-sourcing - readme already documents a manual PATH install, which is normal for a fresh OSS release. Defer until there's actual demand for it.
-- [x] Add a LICENSE file. Fixed: MIT license added.
 - [] Consider a CONTRIBUTING.md - optional for a small personal-tool release, can add later if/when the project gets external contributors.
 - [] `git lfs` maybe breaks rai?
+  - For this to work, the VM needs git lfs too. Another provisioning item, possibly.
 - [] `rai push` should maybe only push the last N commits? (like the depth in github actions)
-
-Checked already, no action needed: scanned full git history for leaked tokens/secrets/credentials - clean. No git remote configured yet either.
+  - Would be nice, but needs to be thought through. The `--force-with-lease` tracking needs to keep working. But for the initial setup, which is also where most of the gain lies, this shouldn't be too complex.
