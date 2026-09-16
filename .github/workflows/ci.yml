@@ -43,19 +43,4 @@ jobs:
       # convention to glob on. test/*.bats is bats syntax, not plain bash,
       # so it's excluded too.
       - run: |
-          shellcheck -s bash \
-            bin/rai \
-            lib/rai-code \
-            lib/rai-common \
-            lib/rai-config \
-            lib/rai-cp \
-            lib/rai-init \
-            lib/rai-mosh \
-            lib/rai-provider-hetzner \
-            lib/rai-provider-selfhosted \
-            lib/rai-pull \
-            lib/rai-push \
-            lib/rai-ssh \
-            lib/rai-start \
-            lib/rai-stop \
-            lib/rai-unlock
+          shellcheck -s bash bin/* lib/*
