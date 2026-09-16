@@ -11,6 +11,8 @@ Viewed through the lens of: what's needed before open-sourcing this.
     - Persistent remote session: `rai-ssh` attaches to a named tmux/screen session on the VM instead of a bare shell, so a drop just means reconnect-and-reattach, nothing running is lost.
     - Both.
   - Next step: figure out which failure mode actually hurts in practice before picking a design.
+    - One thing that happens is that when the connection is lost, it returns to the local terminal and then _moving the mouse causes inputs in the terminal_, which is really annoying.
+    - I often work from a train, close the lid on my laptop and walk to the workplace and want to continue what I was just doing. How? Are there tools that already do this that we should be using?
 - [] Consider if `rai` should create/delete instead of start/stop, as that would save cloud costs. At least on hetzner. Maybe both should be supported?
   - Not a blocker for open-sourcing - a feature/design decision, not a correctness or legal issue. Recommendation: defer, file as a GitHub issue at launch so it's visible as a known direction instead of silently absent.
   - Tradeoff: delete+recreate saves more (Hetzner still bills for a stopped server's attached volume/reserved resources), but loses the server itself (new IP, volume reattachment, reprovisioning) - bigger blast radius, and provider-specific (meaningless for `selfhosted`, which has nothing to create/delete).
