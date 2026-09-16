@@ -5,7 +5,7 @@
 # directly inside a `bash -c` snippet, with an isolated $HOME and a
 # throwaway git repo used as cwd (rai-config finds RAI_REPO_ROOT itself via
 # `git rev-parse --show-toplevel` against the caller's cwd, so pointing cwd
-# at the fake repo is what makes it pick up that repo's `.rai/config`).
+# at the fake repo is what makes it pick up that repo's `.rai/rai.conf`).
 #
 # The first group is focused on RAI_STATIC_IP specifically: it was missing
 # from `_rai_config_vars`, so unlike every other RAI_* var it wasn't part of
@@ -13,7 +13,7 @@
 # config file even when already exported.
 #
 # The second group covers the config files no longer being `source`-d
-# directly: since <repo-root>/.rai/config is meant to be committed and
+# directly: since <repo-root>/.rai/rai.conf is meant to be committed and
 # shared with the team, it's attacker-reachable (a malicious PR, a
 # compromised fork), so these prove a config file can no longer run shell,
 # leak into unrelated variables, or crash a `set -euo pipefail` caller.
@@ -28,8 +28,8 @@ setup() {
   ( cd "$REPO" && git init -q )
 }
 
-@test "rai-config: exported RAI_STATIC_IP is not overwritten by repo .rai/config" {
-  echo "RAI_STATIC_IP=from-repo-config" > "$REPO/.rai/config"
+@test "rai-config: exported RAI_STATIC_IP is not overwritten by repo .rai/rai.conf" {
+  echo "RAI_STATIC_IP=from-repo-config" > "$REPO/.rai/rai.conf"
 
   run env -C "$REPO" HOME="$FAKE_HOME" RAI_STATIC_IP=from-env \
     bash -c "source '$REPO_ROOT/rai-config'; printf '%s' \"\$RAI_STATIC_IP\""
@@ -38,8 +38,8 @@ setup() {
   [ "$output" = "from-env" ]
 }
 
-@test "rai-config: exported RAI_STATIC_IP is not overwritten by home .rai/config" {
-  echo "RAI_STATIC_IP=from-home-config" > "$FAKE_HOME/.rai/config"
+@test "rai-config: exported RAI_STATIC_IP is not overwritten by home .rai/rai.conf" {
+  echo "RAI_STATIC_IP=from-home-config" > "$FAKE_HOME/.rai/rai.conf"
 
   run env -C "$REPO" HOME="$FAKE_HOME" RAI_STATIC_IP=from-env \
     bash -c "source '$REPO_ROOT/rai-config'; printf '%s' \"\$RAI_STATIC_IP\""
@@ -49,8 +49,8 @@ setup() {
 }
 
 @test "rai-config: exported RAI_STATIC_IP is not overwritten when both config files set it" {
-  echo "RAI_STATIC_IP=from-home-config" > "$FAKE_HOME/.rai/config"
-  echo "RAI_STATIC_IP=from-repo-config" > "$REPO/.rai/config"
+  echo "RAI_STATIC_IP=from-home-config" > "$FAKE_HOME/.rai/rai.conf"
+  echo "RAI_STATIC_IP=from-repo-config" > "$REPO/.rai/rai.conf"
 
   run env -C "$REPO" HOME="$FAKE_HOME" RAI_STATIC_IP=from-env \
     bash -c "source '$REPO_ROOT/rai-config'; printf '%s' \"\$RAI_STATIC_IP\""
@@ -59,10 +59,10 @@ setup() {
   [ "$output" = "from-env" ]
 }
 
-@test "rai-config: unexported RAI_STATIC_IP still picks up repo .rai/config" {
+@test "rai-config: unexported RAI_STATIC_IP still picks up repo .rai/rai.conf" {
   # Sanity check that the fix doesn't break the still-lower-priority case:
   # config files must still apply when the var was never exported.
-  echo "RAI_STATIC_IP=from-repo-config" > "$REPO/.rai/config"
+  echo "RAI_STATIC_IP=from-repo-config" > "$REPO/.rai/rai.conf"
 
   run env -C "$REPO" HOME="$FAKE_HOME" \
     bash -c "unset RAI_STATIC_IP; source '$REPO_ROOT/rai-config'; printf '%s' \"\$RAI_STATIC_IP\""
@@ -72,13 +72,13 @@ setup() {
 }
 
 # The following tests cover the switch from `source`-ing config files to
-# parsing them: a committed <repo-root>/.rai/config is attacker-reachable
+# parsing them: a committed <repo-root>/.rai/rai.conf is attacker-reachable
 # (clone + malicious PR), so it must not be able to run shell no matter what
 # it contains.
 
 @test "rai-config: a shell payload after the value is not executed" {
   local sentinel="$BATS_TEST_TMPDIR/sentinel"
-  echo "RAI_STATIC_IP=x; touch $sentinel" > "$REPO/.rai/config"
+  echo "RAI_STATIC_IP=x; touch $sentinel" > "$REPO/.rai/rai.conf"
 
   run env -C "$REPO" HOME="$FAKE_HOME" \
     bash -c "unset RAI_STATIC_IP; source '$REPO_ROOT/rai-config'; printf '%s' \"\$RAI_STATIC_IP\""
@@ -93,7 +93,7 @@ setup() {
   {
     echo "RAI_STATIC_IP=\$(touch $sentinel)"
     echo "RAI_SERVER=\`touch $sentinel\`"
-  } > "$REPO/.rai/config"
+  } > "$REPO/.rai/rai.conf"
 
   run env -C "$REPO" HOME="$FAKE_HOME" \
     bash -c "unset RAI_STATIC_IP RAI_SERVER; source '$REPO_ROOT/rai-config'; printf '%s|%s' \"\$RAI_STATIC_IP\" \"\$RAI_SERVER\""
@@ -104,7 +104,7 @@ setup() {
 }
 
 @test "rai-config: an unrecognized key does not leak into the environment" {
-  echo "EVIL_VAR=foo" > "$REPO/.rai/config"
+  echo "EVIL_VAR=foo" > "$REPO/.rai/rai.conf"
 
   # rai-config warns about the unrecognized key on stderr, which `run`
   # would otherwise merge into $output, so discard it here.
@@ -116,7 +116,7 @@ setup() {
 }
 
 @test "rai-config: double-quoted value is unwrapped to its literal contents" {
-  echo 'RAI_STATIC_IP="quoted value"' > "$REPO/.rai/config"
+  echo 'RAI_STATIC_IP="quoted value"' > "$REPO/.rai/rai.conf"
 
   run env -C "$REPO" HOME="$FAKE_HOME" \
     bash -c "unset RAI_STATIC_IP; source '$REPO_ROOT/rai-config'; printf '%s' \"\$RAI_STATIC_IP\""
@@ -126,7 +126,7 @@ setup() {
 }
 
 @test "rai-config: single-quoted value is unwrapped to its literal contents" {
-  echo "RAI_STATIC_IP='quoted value'" > "$REPO/.rai/config"
+  echo "RAI_STATIC_IP='quoted value'" > "$REPO/.rai/rai.conf"
 
   run env -C "$REPO" HOME="$FAKE_HOME" \
     bash -c "unset RAI_STATIC_IP; source '$REPO_ROOT/rai-config'; printf '%s' \"\$RAI_STATIC_IP\""
@@ -139,7 +139,7 @@ setup() {
   {
     echo "this line has no equals sign"
     echo "RAI_STATIC_IP=from-repo-config"
-  } > "$REPO/.rai/config"
+  } > "$REPO/.rai/rai.conf"
 
   # rai-config warns about the malformed line on stderr, which `run` would
   # otherwise merge into $output, so discard it here.

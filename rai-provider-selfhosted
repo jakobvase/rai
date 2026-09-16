@@ -5,7 +5,7 @@
 # no power-management integration, so it's always assumed to be on.
 #
 # Configure the address via RAI_STATIC_IP (an IP or hostname), in
-# ~/.rai/config or <repo-root>/.rai/config.
+# ~/.rai/rai.conf or <repo-root>/.rai/rai.conf.
 
 provider_ip() {
   if [ -z "$RAI_STATIC_IP" ]; then

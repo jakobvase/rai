@@ -28,8 +28,8 @@ All `rai-*` scripts source `rai-config`, which loads these variables, all option
 
 They can be set, in increasing order of precedence:
 
-- In `~/.rai/config` - personal/per-machine overrides; don't commit this one, and use it for anything you don't want in the repo (e.g. secrets).
-- In `<repo-root>/.rai/config` - repo defaults. Can be committed and shared with a team, but mainly for being able to override values on a repo-by-repo basis (in case you want some repo running somewhere else for some reason).
+- In `~/.rai/rai.conf` - personal/per-machine overrides; don't commit this one, and use it for anything you don't want in the repo (e.g. secrets).
+- In `<repo-root>/.rai/rai.conf` - repo defaults. Can be committed and shared with a team, but mainly for being able to override values on a repo-by-repo basis (in case you want some repo running somewhere else for some reason).
 - As already-exported environment variables (`RAI_SERVER=foo rai start`), which always win.
 
 Both files are plain `KEY=value` text files, one assignment per line, and
@@ -37,7 +37,7 @@ are parsed (not sourced) - only lines assigning one of the variables above
 are applied, a value can optionally be wrapped in matching single or double
 quotes, and everything else (blank lines, `#` comments, unrecognized keys,
 malformed lines) is ignored with a warning. There's no `$(...)`, backtick,
-or variable-expansion support, so a `.rai/config` file can't run arbitrary
+or variable-expansion support, so a `.rai/rai.conf` file can't run arbitrary
 shell - safe to commit and share with the team.
 
 ## Encrypted volumes

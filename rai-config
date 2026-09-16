@@ -3,8 +3,8 @@
 #
 # Precedence, highest to lowest:
 #   1. Already-exported environment variables
-#   2. <repo-root>/.rai/config (repo defaults, committed, shared with the team)
-#   3. ~/.rai/config          (per-machine override, not committed)
+#   2. <repo-root>/.rai/rai.conf (repo defaults, committed, shared with the team)
+#   3. ~/.rai/rai.conf          (per-machine override, not committed)
 #   4. Hardcoded fallback defaults below
 #
 # Both config files are plain `KEY=value` text files, one assignment per
@@ -14,7 +14,7 @@
 # which are stripped, but is otherwise taken as literal text - there is no
 # `$(...)`, backtick, or variable-expansion support, so a config file
 # cannot run arbitrary shell no matter what it contains. This matters most
-# for <repo-root>/.rai/config, since that one is meant to be committed and
+# for <repo-root>/.rai/rai.conf, since that one is meant to be committed and
 # shared with the team (and so can arrive via a clone or a PR, not just a
 # file you personally wrote).
 
@@ -92,8 +92,8 @@ _rai_load_config_file() {
   return 0
 }
 
-[ -f "$HOME/.rai/config" ] && _rai_load_config_file "$HOME/.rai/config"
-[ -n "$RAI_REPO_ROOT" ] && [ -f "$RAI_REPO_ROOT/.rai/config" ] && _rai_load_config_file "$RAI_REPO_ROOT/.rai/config"
+[ -f "$HOME/.rai/rai.conf" ] && _rai_load_config_file "$HOME/.rai/rai.conf"
+[ -n "$RAI_REPO_ROOT" ] && [ -f "$RAI_REPO_ROOT/.rai/rai.conf" ] && _rai_load_config_file "$RAI_REPO_ROOT/.rai/rai.conf"
 unset -f _rai_load_config_file
 
 for _rai_var in $_rai_config_vars; do
