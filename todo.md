@@ -21,3 +21,5 @@ Viewed through the lens of: what's needed before open-sourcing this.
   - For this to work, the VM needs git lfs too. Another provisioning item, possibly.
 - [] `rai push` should maybe only push the last N commits? (like the depth in github actions)
   - Would be nice, but needs to be thought through. The `--force-with-lease` tracking needs to keep working. But for the initial setup, which is also where most of the gain lies, this shouldn't be too complex.
+- [] Improve help message. `rai` with no/bad args just prints a bare usage line (`Usage: rai <start|stop|push|pull|cp|ssh|mosh|code|unlock>`) - no per-command explanation, no mention of env vars/config. See `help-message-plan.md`.
+- [] GitHub Actions CI - no CI config exists today; tests (`bats test/`) only run manually. See `github-actions-plan.md`.
