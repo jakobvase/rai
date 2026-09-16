@@ -149,3 +149,61 @@ setup() {
   [ "$status" -eq 0 ]
   [ "$output" = "from-repo-config" ]
 }
+
+# The following tests cover the two hardening checks added on top of the
+# parser: a value starting with `-` is never legitimate for any config var
+# (it risks being parsed as a CLI option by ssh/scp/hcloud, or picking an
+# unexpected provider file), and the final resolved RAI_PROVIDER must be one
+# of the two providers rai-provider-* actually implements.
+
+@test "rai-config: a value starting with '-' from repo .rai/rai.conf is ignored with a warning" {
+  echo "RAI_STATIC_IP=-oProxyCommand=evil" > "$REPO/.rai/rai.conf"
+  local stderr_file="$BATS_TEST_TMPDIR/stderr"
+
+  run env -C "$REPO" HOME="$FAKE_HOME" \
+    bash -c "unset RAI_STATIC_IP; source '$REPO_ROOT/rai-config' 2>'$stderr_file'; printf '%s' \"\${RAI_STATIC_IP:-unset}\""
+
+  [ "$status" -eq 0 ]
+  [ "$output" = "unset" ]
+  grep -q "warning: ignoring value starting with '-'" "$stderr_file"
+}
+
+@test "rai-config: a value starting with '-' from home .rai/rai.conf is ignored with a warning" {
+  echo "RAI_SERVER=-x" > "$FAKE_HOME/.rai/rai.conf"
+  local stderr_file="$BATS_TEST_TMPDIR/stderr"
+
+  run env -C "$REPO" HOME="$FAKE_HOME" \
+    bash -c "unset RAI_SERVER; source '$REPO_ROOT/rai-config' 2>'$stderr_file'; printf '%s' \"\$RAI_SERVER\""
+
+  [ "$status" -eq 0 ]
+  # Falls back to the hardcoded default since the malicious value was rejected.
+  [ "$output" = "rai" ]
+  grep -q "warning: ignoring value starting with '-'" "$stderr_file"
+}
+
+@test "rai-config: an unrecognized RAI_PROVIDER fails loudly instead of being applied" {
+  echo "RAI_PROVIDER=evilprovider" > "$REPO/.rai/rai.conf"
+  local stderr_file="$BATS_TEST_TMPDIR/stderr"
+
+  run env -C "$REPO" HOME="$FAKE_HOME" \
+    bash -c "unset RAI_PROVIDER; source '$REPO_ROOT/rai-config' 2>'$stderr_file'"
+
+  [ "$status" -ne 0 ]
+  grep -q "error: unknown RAI_PROVIDER 'evilprovider'" "$stderr_file"
+}
+
+@test "rai-config: RAI_PROVIDER=hetzner is accepted" {
+  run env -C "$REPO" HOME="$FAKE_HOME" RAI_PROVIDER=hetzner \
+    bash -c "source '$REPO_ROOT/rai-config'; printf '%s' \"\$RAI_PROVIDER\""
+
+  [ "$status" -eq 0 ]
+  [ "$output" = "hetzner" ]
+}
+
+@test "rai-config: RAI_PROVIDER=selfhosted is accepted" {
+  run env -C "$REPO" HOME="$FAKE_HOME" RAI_PROVIDER=selfhosted \
+    bash -c "source '$REPO_ROOT/rai-config'; printf '%s' \"\$RAI_PROVIDER\""
+
+  [ "$status" -eq 0 ]
+  [ "$output" = "selfhosted" ]
+}

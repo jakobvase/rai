@@ -87,6 +87,16 @@ _rai_load_config_file() {
       \'*\') value="${value#\'}"; value="${value%\'}" ;;
     esac
 
+    # A value starting with `-` is never legitimate for any of these vars,
+    # and could otherwise be parsed as a CLI option by a downstream command
+    # (ssh, scp, hcloud, or the `source` used to pick a provider file).
+    case "$value" in
+      -*)
+        echo "rai-config: warning: ignoring value starting with '-' for key '$key' on line $line_no in $file" >&2
+        continue
+        ;;
+    esac
+
     printf -v "$key" '%s' "$value"
   done < "$file"
   return 0
@@ -110,3 +120,11 @@ RAI_SERVER="${RAI_SERVER:-rai}"
 RAI_REMOTE_BASE="${RAI_REMOTE_BASE:-/home/$RAI_USER/workspaces}"
 RAI_VOLUME="${RAI_VOLUME:-/dev/sdb}"
 RAI_PROVIDER="${RAI_PROVIDER:-hetzner}"
+
+case "$RAI_PROVIDER" in
+  hetzner|selfhosted) ;;
+  *)
+    echo "rai-config: error: unknown RAI_PROVIDER '$RAI_PROVIDER' (expected 'hetzner' or 'selfhosted')" >&2
+    exit 1
+    ;;
+esac
