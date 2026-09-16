@@ -36,6 +36,10 @@ if [ -z "$branch" ]; then
   echo "Not on a branch (detached HEAD). Checkout a branch before pushing." >&2
   exit 1
 fi
+
+# We keep track of where the remote is. One of the goals of this project is to not
+# have two remotes in git, because that's annoying to work with. But that means we
+# have to track the remote ourselves in refs.
 lease_ref="refs/rai-remote/$branch"
 
 if [ "$force" = true ]; then
