@@ -1,7 +1,6 @@
 # Remote AI
 
 Scripts to manage working on codebases on a remote vm running ai/llm tools.
-I don't trust llms enough to run them on my own machine, with all the things I have access to, and this is my solution.
 
 To install, download/clone this repo and add `export PATH="$PATH:<path-to-rai>/bin"` to your shell setup (`~/.bashrc` or similar).
 
@@ -10,10 +9,25 @@ I intend to rewrite it for human consumption when I have the spare time, likely 
 
 ## Why should I use rai?
 
+Rai keeps you in control over what the llm has access to.
+
 - You need to work on a git repo
 - You would like to use an llm for some of the work
-- You don't trust the llm to run on your own machine
+- You'd like for the llm to be able to work without having to permit actions
+- You don't trust the llm to run like that on your own machine
+- You find it annoying to work on repos with llms in a browser
+- Github codespaces didn't do it for you
 - Multiple git remotes annoy you
+
+## Synopsis
+
+- `rai push`, `rai pull`: push (and create) and pull a git repo from and to a remote vm. Only moves committed changes.
+- `rai ssh`, `rai mosh`: connect to the vm to do things there. Mosh if you work when traveling.
+- `rai start`, `rai stop`: start and stop the remote vm.
+- `rai code`: start visual studio code on in the repo on the vm.
+- `rai cp`: copy uncommitted files back and forth
+- `rai unlock`: unlocks (and mounts) a volume on the remote vm, if you prefer to keep your work encrypted.
+- `rai init`: create a .conf file for the repo, so rai has the information it needs.
 
 ## Requirements
 
