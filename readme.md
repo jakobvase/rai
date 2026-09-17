@@ -8,6 +8,13 @@ To install, download/clone this repo and add `export PATH="$PATH:<path-to-rai>/b
 Note: As is evident, a lot of this tool was written with the help of AI.
 I intend to rewrite it for human consumption when I have the spare time, likely not soon.
 
+## Why should I use rai?
+
+- You need to work on a git repo
+- You would like to use an llm for some of the work
+- You don't trust the llm to run on your own machine
+- Multiple git remotes annoy you
+
 ## Requirements
 
 - `jq`, `git`, `ssh`, and `scp` are required. `code` and `mosh` are optional, but helpful.
