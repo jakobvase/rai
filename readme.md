@@ -125,6 +125,13 @@ Requirements, not automated by any script here:
   specific port instead, so only that single port needs to be open. This
   repo does no firewall automation for either provider, so opening the
   port(s) is on you.
+- `sudo loginctl enable-linger <user>` on the VM, once. `mosh-server` and
+  the tmux session it starts live under the SSH login's systemd session
+  scope, not a persistent one; without lingering, once your last session to
+  the VM closes (e.g. mosh drops and nothing else is connected), systemd is
+  free to tear that scope down and take mosh-server, tmux, and everything
+  running inside it with it - so the next `rai mosh` finds no session to
+  reattach to instead of resuming where you left off.
 
 If you run `rai mosh` against multiple repos on the same VM at once and use
 `RAI_MOSH_PORT`, give each repo its own port - two `mosh-server` processes on
